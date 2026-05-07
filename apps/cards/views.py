@@ -5,15 +5,15 @@ from .services import search_card
 
 @api_view(['GET'])
 def search_card_view(request):
-    name = request.GET.get('nome')
+    name = request.GET.get('name')
 
     if not name:
-        return Response({"erro": "Informe o nome da carta"}, status=400)
+        return Response({"erro": "Provide card name"}, status=400)
 
-    dados = search_card(name)
+    data = search_card(name)
 
-    if not dados:
-        return Response({"erro": "Carta não encontrada"}, status=404)
+    if not data:
+        return Response({"erro": "Card not found"}, status=404)
 
-    return Response(dados)
+    return Response(data)
 

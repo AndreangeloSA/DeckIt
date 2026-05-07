@@ -10,20 +10,21 @@ def search_card(name):
     if response.status_code != 200:
         return None
 
-    dados_carta = response.json()
+    data_card = response.json()
 
-    carta = dados_carta["data"][0]
+    card = data_card["data"][0]
 
-    carta_formatada = {
-        "nome": carta["name"],
-        "type": carta["type"],
-        "atk": carta.get["atk"],
-        "def": carta.get["def"],
-        "hp": carta.get["hp"],
-        "desc": carta.get["desc"],
-        "level": carta.get["level"],
-        "race": carta.get["race"],
+    card_formatted = {
+        "id": card["id"],
+        "name": card["name"],
+        "type": card["type"],
+        "atk": card.get["atk"],
+        "def": card.get["def"],
+        "hp": card.get["hp"],
+        "desc": card.get["desc"],
+        "level": card.get["level"],
+        "race": card.get["race"],
     }
 
-    return carta_formatada
+    return card_formatted
 
