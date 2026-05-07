@@ -8,16 +8,13 @@ API REST desenvolvida com Django e Django REST Framework para gerenciamento de c
 - Django
 - Django REST Framework
 - SQLite (desenvolvimento)
-- PostgreSQL (planejado)
 
 ## Funcionalidades
 
 - Pesquisa de cards
 - Criação de decks
-- Relacionamento entre cards e decks
 - Sistema de usuários
-- Endpoints RESTful
-- Painel administrativo Django
+- Endpoints RESTful (TODO)
 
 ## Estrutura do Projeto
 
@@ -93,7 +90,7 @@ http://127.0.0.1:8000/
 python manage.py createsuperuser
 ```
 
-## Endpoints
+## Endpoints (TODO)
 
 | Método | Endpoint | Descrição |
 |---|---|---|
