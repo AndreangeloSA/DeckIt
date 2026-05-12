@@ -1,22 +1,22 @@
 # Yu-Gi-Oh API
 
-API REST desenvolvida com Django e Django REST Framework para gerenciamento de cards, decks e usuários do universo Yu-Gi-Oh.
+Academic REST API project built using Python, Django and Django REST Framework for managing Yu-Gi-Oh cards and creating personalized decks.
 
-## Tecnologias
+## Technologies
 
 - Python
 - Django
 - Django REST Framework
-- SQLite (desenvolvimento)
+- SQLite (development)
 
-## Funcionalidades
+## Features
 
-- Pesquisa de cards
-- Criação de decks
-- Sistema de usuários
-- Endpoints RESTful (TODO)
+- Card search
+- Deck creation (TODO)
+- User system (TODO)
+- RESTful endpoints (TODO)
 
-## Estrutura do Projeto
+## Project Structure
 
 ```text
 project/
@@ -24,7 +24,6 @@ project/
 ├── apps/
 │   ├── cards/
 │   ├── decks/
-│   └── users/
 │
 ├── config/
 │
@@ -33,16 +32,16 @@ project/
 └── README.md
 ```
 
-## Instalação
+## Installation
 
-### Clone o repositório
+### Clone the repository
 
 ```bash
 git clone <repo-url>
 cd <repo-name>
 ```
 
-### Crie um ambiente virtual
+### Create a virtual environment
 
 #### Windows
 
@@ -58,33 +57,33 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
-### Instale as dependências
+### Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Executando o projeto
+## Running the Project
 
-### Aplicar migrations
+### Apply migrations
 
 ```bash
 python manage.py migrate
 ```
 
-### Rodar o servidor
+### Run the development server
 
 ```bash
 python manage.py runserver
 ```
 
-A aplicação estará disponível em:
+The application will be available at:
 
 ```text
 http://127.0.0.1:8000/
 ```
 
-## Criando superusuário
+## Creating a Superuser
 
 ```bash
 python manage.py createsuperuser
@@ -92,13 +91,13 @@ python manage.py createsuperuser
 
 ## Endpoints (TODO)
 
-| Método | Endpoint | Descrição |
+| Method | Endpoint | Description |
 |---|---|---|
-| GET | `/api/cards/` | Listar cards |
-| POST | `/api/cards/` | Criar card |
-| GET | `/api/decks/` | Listar decks |
-| POST | `/api/decks/` | Criar deck |
+| GET | `/api/cards/` | List cards |
+| POST | `/api/cards/` | Create card |
+| GET | `/api/decks/` | List decks |
+| POST | `/api/decks/` | Create deck |
 
-## Licença
+## License
 
-Este projeto está sob a licença MIT.
+This project is licensed under the MIT License.
