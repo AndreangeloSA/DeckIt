@@ -1,30 +1,42 @@
 import requests
+from .models import Card
 
 BASE_URL = "https://db.ygoprodeck.com/api/v7/cardinfo.php"
 
 def search_card(name):
-    params = {"fname": name}
 
-    response = requests.get(BASE_URL, params=params)
+        params = {"fname": name}
 
-    if response.status_code != 200:
-        return None
+        response = requests.get(BASE_URL, params=params)
 
-    data_card = response.json()
+        if response.status_code != 200:
+            return None
 
-    card = data_card["data"][0]
+        card_data = response.json()
 
-    card_formatted = {
-        "id": card["id"],
-        "name": card["name"],
-        "type": card["type"],
-        "atk": card.get["atk"],
-        "def": card.get["def"],
-        "hp": card.get["hp"],
-        "desc": card.get["desc"],
-        "level": card.get["level"],
-        "race": card.get["race"],
-    }
+        card = card_data["data"][0]
 
-    return card_formatted
+        formatted_card = normalize_card(card)
+
+        return formatted_card
+
+def normalize_card(card):
+
+        return {
+                "id": card["id"],
+                "name": card["name"],
+                "type": card["type"],
+                "atk": card.get("atk"),
+                "defense": card.get("def"),
+                "desc": card.get("desc"),
+                "level": card.get("level"),
+                "race": card.get("race"),
+        }
+
+def save_card(formatted_card):
+
+        Card.objects.update_or_create(
+            id=formatted_card["id"],
+            defaults = formatted_card
+        )
 

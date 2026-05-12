@@ -7,10 +7,9 @@ class Card(models.Model):
     type = models.CharField(max_length=100)
     atk = models.IntegerField()
     defense = models.IntegerField()
-    hp = models.IntegerField()
     desc = models.CharField(max_length=500)
     race = models.CharField(max_length=100)
     level = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.card_name
+        return self.name
