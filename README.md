@@ -23,6 +23,8 @@ project/
 │
 ├── apps/
 │   ├── cards/
+        ├──management
+            ├──commands
 │   ├── decks/
 │
 ├── config/
@@ -81,6 +83,18 @@ The application will be available at:
 
 ```text
 http://127.0.0.1:8000/
+```
+
+### Import cards
+
+```
+python manage.py import_cards
+```
+
+### Search for a card
+
+```
+Example: http://127.0.0.1:8000/api/cards/search/dark-magician/
 ```
 
 ## Creating a Superuser

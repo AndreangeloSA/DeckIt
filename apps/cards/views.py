@@ -1,21 +1,35 @@
-from django.shortcuts import render
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from apps.cards.services import search_card, save_card
+from rest_framework.views import APIView
+
+from apps.cards.models import Card
+from apps.cards.serializers import CardSerializer
 
 
-@api_view(['GET'])
-def search_card_view(request):
-    name = request.GET.get('name')
+class CardSearchView(APIView):
 
-    if not name:
-        return Response({"erro": "Provide card name"}, status=400)
+    def get(self,request):
 
-    card = search_card(name)
-    save_card(card)
+        cards = Card.objects.all()
+        card_name = request.query_params.get("name")
+        card_type = request.query_params.get("type")
+        card_attribute = request.query_params.get("attribute")
+        card_race = request.query_params.get("race")
+        card_frametype = request.query_params.get("frametype")
 
-    if not card:
-        return Response({"erro": "Card not found"}, status=404)
+        if card_name:
+            cards = cards.filter(name__icontains=card_name)
+        if card_type:
+            cards = cards.filter(type=card_type)
+        if card_attribute:
+            cards = cards.filter(attribute=card_attribute)
+        if card_race:
+            cards = cards.filter(race=card_race)
+        if card_frametype:
+            cards.filter(frametype=card_frametype)
 
-    return Response(card)
+        serializer = CardSerializer(cards, many=True)
+
+        return Response(serializer.data)
+
+
 
