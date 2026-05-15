@@ -26,6 +26,7 @@ project/
         ├──management
             ├──commands
 │   ├── decks/
+    ├── users/
 │
 ├── config/
 │
@@ -85,16 +86,21 @@ The application will be available at:
 http://127.0.0.1:8000/
 ```
 
-### Import cards
+## Import cards
 
 ```
 python manage.py import_cards
 ```
-
-### Search for a card
+### If database is already populated, run to clear data:
 
 ```
-Example: http://127.0.0.1:8000/api/cards/search/dark-magician/
+python manage.py flush
+```
+
+## Search for a card
+
+```
+Example: http://127.0.0.1:8000/api/cards/search/?name=blue-eyes%20white%20dragon
 ```
 
 ## Creating a Superuser

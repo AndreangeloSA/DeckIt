@@ -6,11 +6,11 @@ BASE_URL = "https://db.ygoprodeck.com/api/v7/cardinfo.php"
 def normalize_card(card):
 
         return {
-                "id": card.get["id"],
-                "name": card.get["name"],
-                "type": card.get["type"],
-                "frametype": card.get["frametype"],
-                "desc": card.get("desc"),
+                "id": card["id"],
+                "name": card["name"],
+                "type": card["type"],
+                "frameType": card.get("frameType"),
+                "desc": card["desc"],
                 "atk": card.get("atk"),
                 "defense": card.get("def"),
                 "level": card.get("level"),
@@ -34,7 +34,7 @@ def import_all_cards():
     if response.status_code != 200:
         return None
 
-    card_data = response.json()
+    card_data = response.json()["data"]
 
     for card in card_data:
         formatted_card = normalize_card(card)
