@@ -1,5 +1,6 @@
 import requests
 from .models import Card
+from rest_framework import status
 
 BASE_URL = "https://db.ygoprodeck.com/api/v7/cardinfo.php"
 
@@ -31,7 +32,7 @@ def import_all_cards():
 
     response = requests.get(BASE_URL)
 
-    if response.status_code != 200:
+    if response.status_code != status.HTTP_200_OK:
         return None
 
     card_data = response.json()["data"]
@@ -39,4 +40,5 @@ def import_all_cards():
     for card in card_data:
         formatted_card = normalize_card(card)
         save_card(formatted_card)
+    return None
 
