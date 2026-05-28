@@ -25,11 +25,11 @@ project/
 │   ├── cards/
         ├──management
             ├──commands
-│   ├── decks/
+    ├── decks/
     ├── users/
 │
 ├── config/
-│
+├── db.sqlite3
 ├── manage.py
 ├── requirements.txt
 └── README.md
@@ -111,12 +111,11 @@ python manage.py createsuperuser
 
 ## Endpoints (TODO)
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/cards/` | List cards |
-| POST | `/api/cards/` | Create card |
-| GET | `/api/decks/` | List decks |
-| POST | `/api/decks/` | Create deck |
+| Method | Endpoint               | Description   |
+|--------|------------------------|---------------|
+| POST   | `/api/users/register/` | Register user |
+| POST   | `/api/users/login/`    | User login    |
+| GET    | `/api/cards/search/`   | Search cards  |
 
 ## License
 

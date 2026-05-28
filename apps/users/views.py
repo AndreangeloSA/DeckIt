@@ -2,19 +2,18 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
-from apps.users.serializers import RegisterSerializer
+from apps.users.serializers import RegisterSerializer, LoginSerializer
+
 
 class RegisterView(APIView):
 
     def post(self, request):
-        serializer = RegisterSerializer(data=request.data)
+        registerSerializer = RegisterSerializer(data=request.data)
 
-        if serializer.is_valid():
-            serializer.save()
+        if registerSerializer.is_valid():
+            registerSerializer.save()
             return Response(
-                serializer.data, status=status.HTTP_201_CREATED)
+                registerSerializer.data, status=status.HTTP_201_CREATED)
 
         return Response(
-            serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
+            registerSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
