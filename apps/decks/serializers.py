@@ -1,20 +1,18 @@
 from rest_framework import serializers
-from apps.cards.models import Card
 from apps.decks.models import Deck, CardsOnDeck
-
 
 class DeckSerializer(serializers.ModelSerializer):
     class Meta:
         model = Deck
-        fields = "__all__"
+        fields = ["name"]
 
     def create(self, validated_data):
         return Deck.objects.create(**validated_data)
 
-class AddCardSerializer(serializers.Serializer):
+class AddCardSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Card
-        fields = ["id", "card_quantity"]
+        model = CardsOnDeck
+        fields = ["deck", "card", "card_quantity"]
 
     def create(self, validated_data):
         return CardsOnDeck.objects.create(**validated_data)

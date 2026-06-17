@@ -6,7 +6,7 @@ from apps.cards.models import Card
 #Table representing the decks,
 class Deck(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     cards = models.ManyToManyField(Card, related_name="deck_cards", through="CardsOnDeck")
 

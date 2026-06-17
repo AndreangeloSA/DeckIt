@@ -3,8 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from apps.decks.models import Deck
-from serializers import DeckSerializer
-from serializers import AddCardSerializer
+from apps.decks.serializers import DeckSerializer
+from apps.decks.serializers import AddCardSerializer
 from rest_framework.permissions import IsAuthenticated
 
 class CreateDeck(APIView):
@@ -38,19 +38,20 @@ class ViewDeck(APIView):
     def get(self, request):
 
         deck_id = request.query_params.get('id')
-        deck_name = request.query_params.get('name')
 
-        if deck_name:
-            deck = Deck.objects.get(id = deck_id)
-            serializer = DeckSerializer(deck)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        if deck_id:
+            if Deck.objects.filter(id=deck_id).exists():
+                deck = Deck.objects.get(id=deck_id)
+                if request.user == deck.user:
+                    serializer = DeckSerializer(deck)
+                    return Response(serializer.data, status=status.HTTP_200_OK)
 
-        elif deck_name:
-            deck = Deck.objects.get(name = deck_name)
-            serializer = DeckSerializer(deck)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+                else: return Response(status=status.HTTP_403_FORBIDDEN)
 
-        else : return Response({"error": "Invalid request"}, status=status.HTTP_400_BAD_REQUEST)
+            else: return Response(status=status.HTTP_404_NOT_FOUND)
+
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 
 

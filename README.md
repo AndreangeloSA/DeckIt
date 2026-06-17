@@ -1,6 +1,6 @@
 # Yu-Gi-Oh API
 
-Academic REST API project built using Python, Django and Django REST Framework for managing Yu-Gi-Oh cards and creating personalized decks.
+REST API project built using Python, Django and Django REST Framework for managing Yu-Gi-Oh cards and creating personalized decks.
 
 ## Technologies
 
@@ -8,13 +8,14 @@ Academic REST API project built using Python, Django and Django REST Framework f
 - Django
 - Django REST Framework
 - SQLite (development)
+- JWT
 
 ## Features
 
 - Card search
-- Deck creation (TODO)
-- User system (TODO)
-- RESTful endpoints (TODO)
+- Deck creation
+- User system
+- RESTful endpoints
 
 ## Project Structure
 
@@ -90,6 +91,7 @@ http://127.0.0.1:8000/
 
 ```
 python manage.py import_cards
+** use with discretion, external API has requests limit per IP
 ```
 ### If database is already populated, run to clear data:
 
@@ -109,13 +111,17 @@ Example: http://127.0.0.1:8000/api/cards/search/?name=blue-eyes%20white%20dragon
 python manage.py createsuperuser
 ```
 
-## Endpoints (TODO)
+## Endpoints
 
-| Method | Endpoint               | Description   |
-|--------|------------------------|---------------|
-| POST   | `/api/users/register/` | Register user |
-| POST   | `/api/users/login/`    | User login    |
-| GET    | `/api/cards/search/`   | Search cards  |
+| Method | Endpoint                    | Description                     |
+|--------|-----------------------------|---------------------------------|
+| POST   | `/api/users/register/`      | Register user                   |
+| POST   | `/api/users/token/`         | User login                      |
+| GET    | `/api/users/token/refresh/` | Refresh access token            |
+| GET    | `/api/cards/search/`        | Search cards                    |
+| POST   | `/api/decks/create/`        | Create deck                     |
+| POST   | `/api/decks/add/`           | Add card to deck                |
+| GET    | `/api/decks/decks/`         | View deck and list cards inside |
 
 ## License
 

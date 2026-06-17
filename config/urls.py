@@ -17,14 +17,18 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import (TokenObtainPairView,TokenRefreshView,)
-
+from apps.decks.views import CreateDeck, AddCards, ViewDeck
 from apps.users.views import RegisterView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/cards/', include('apps.cards.urls')),
     path('api/users/', include('apps.users.urls')),
+    path('api/decks/', include('apps.decks.urls')),
     path('register/', RegisterView.as_view(), name='register'),
-    path("token/",TokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("token/refresh/",TokenRefreshView.as_view(),name="token_refresh"),
+    path('token/',TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/',TokenRefreshView.as_view(),name='token_refresh'),
+    path('create/',CreateDeck.as_view(),name='create'),
+    path('add/',AddCards.as_view(),name='add'),
+    path('decks/<int:deck_id>/', ViewDeck.as_view(), name='view'),
 ]
