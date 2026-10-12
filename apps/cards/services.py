@@ -38,7 +38,6 @@ def import_all_cards():
     card_data = response.json()["data"]
 
     for card in card_data:
-        formatted_card = normalize_card(card)
-        save_card(formatted_card)
+        save_card(card)
     return None
 
