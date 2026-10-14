@@ -24,7 +24,7 @@ class CreateDeck(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 #Adds card to users decks, checks for ownership
-class AlterCardQuantity(APIView):
+class ManageCards(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
@@ -125,16 +125,3 @@ class DeckList(APIView):
         deck_list = Deck.objects.filter(user=request.user)
         serializer = DeckSerializer(deck_list, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-
-
-
-
-
-
-
-
-
-
-

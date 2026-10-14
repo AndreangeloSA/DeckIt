@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import (TokenObtainPairView,TokenRefreshView,)
-from apps.decks.views import CreateDeck, ViewDeck, AlterCardQuantity, DeckList
+from apps.decks.views import CreateDeck, ViewDeck, DeckList, ManageCards
 from apps.users.views import RegisterView
 
 urlpatterns = [
@@ -29,7 +29,7 @@ urlpatterns = [
     path('token/',TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/',TokenRefreshView.as_view(),name='token_refresh'),
     path('create/',CreateDeck.as_view(),name='create'),
-    path('alter_card_qtd/',AlterCardQuantity.as_view(),name='alter_card_qtd'),
+    path('manage_cards/', ManageCards.as_view(), name='manage_cards'),
     path('decks/<int:deck_id>/', ViewDeck.as_view(), name='view'),
     path('decklist/', DeckList.as_view(), name='decklist'),
 ]

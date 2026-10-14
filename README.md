@@ -1,6 +1,6 @@
 # Yu-Gi-Oh API
 
-REST API project built using Python, Django and Django REST Framework for managing Yu-Gi-Oh cards and creating personalized decks.
+REST API project built using Python, Django and Django REST Framework for managing Yu-Gi-Oh! cards and creating personalized decks.
 
 ## Technologies
 
@@ -23,14 +23,17 @@ REST API project built using Python, Django and Django REST Framework for managi
 project/
 │
 ├── apps/
-│   ├── cards/
-        ├──management
-            ├──commands
-    ├── decks/
-    ├── users/
+│  ├── cards/
+│  │    ├──management
+│  │        ├──commands
+│  │            ├── import_cards.py
+│  ├── decks/
+│  ├── users/
 │
 ├── config/
-├── db.sqlite3
+│
+├── .env.example
+├── .gitignore
 ├── manage.py
 ├── requirements.txt
 └── README.md
@@ -44,6 +47,23 @@ project/
 git clone <repo-url>
 cd <repo-name>
 ```
+
+### Environment Variables
+
+Create a `.env` file in the project root and add:
+
+```
+SECRET_KEY=your_django_secret_key
+DEBUG=True
+```
+
+It is optional and you could use the .env.example by changing the path on the settings.py
+
+### Create your secret key
+```
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+```
+add your key to the .env file
 
 ### Create a virtual environment
 
@@ -113,15 +133,16 @@ python manage.py createsuperuser
 
 ## Endpoints
 
-| Method | Endpoint                    | Description                     |
-|--------|-----------------------------|---------------------------------|
-| POST   | `/api/users/register/`      | Register user                   |
-| POST   | `/api/users/token/`         | User login                      |
-| GET    | `/api/users/token/refresh/` | Refresh access token            |
-| GET    | `/api/cards/search/`        | Search cards                    |
-| POST   | `/api/decks/create/`        | Create deck                     |
-| POST   | `/api/decks/add/`           | Add card to deck                |
-| GET    | `/api/decks/decks/`         | View deck and list cards inside |
+| Method      | Endpoint                    | Description                                  |
+|-------------|-----------------------------|:---------------------------------------------|
+| POST        | `/api/users/register/`      | Register user                                |
+| POST        | `/api/users/token/`         | User login                                   |
+| GET         | `/api/users/token/refresh/` | Refresh access token                         |
+| GET         | `/api/cards/search/`        | Search cards                                 |
+| POST        | `/api/decks/create/`        | Create deck                                  |
+| POST/DELETE | `/api/decks/manage_cards/`  | Add, remove, alter quantity of cards on deck |
+| GET         | `/api/decks/deck/`          | View deck and list cards inside              |
+| GET         | `/api/decks/decklist/`      | View list of decks owned by user             |
 
 ## License
 

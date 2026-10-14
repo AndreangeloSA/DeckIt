@@ -1,0 +1,72 @@
+# =========================
+# Environment variables
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Virtual environments
+# =========================
+.venv/
+venv/
+env/
+
+# =========================
+# Python cache
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# =========================
+# SQLite database
+# =========================
+db.sqlite3
+db.sqlite3-*
+*.sqlite3
+
+# =========================
+# Testing
+# =========================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+.nox/
+
+# =========================
+# IDE and editors
+# =========================
+.vscode/
+.idea/
+*.swp
+
+# =========================
+# Operating system
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Logs and temporary files
+# =========================
+*.log
+*.tmp
+*.bak
+
+# =========================
+# Build and distribution
+# =========================
+build/
+dist/
+*.egg-info/
+
+# =========================
+# Django local files
+# =========================
+media/
+staticfiles/

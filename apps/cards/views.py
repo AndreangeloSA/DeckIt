@@ -18,6 +18,7 @@ class CardSearchView(APIView):
         card_attribute = request.query_params.get("attribute")
         card_race = request.query_params.get("race")
         card_frametype = request.query_params.get("frameType")
+        card_image = request.query_params.get("image")
 
         #filters cards based on parameter
         if card_name:
@@ -30,11 +31,10 @@ class CardSearchView(APIView):
             cards = cards.filter(race__icontains=card_race)
         if card_frametype:
             cards = cards.filter(frameType__icontains=card_frametype)
+        if card_image:
+            cards = cards.filter(image__icontains=card_image)
 
         #Converts card object into json
-        serializer = CardSerializer(cards, many=True)
+        serializer = CardSerializer(cards, many=True, context={'request': request})
 
         return Response(serializer.data)
-
-
-

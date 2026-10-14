@@ -24,7 +24,3 @@ class CardsOnDeck(models.Model):
 
     class Meta:
         unique_together = ("deck", "card")
-
-
-
-

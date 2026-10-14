@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 from django.conf.global_settings import AUTH_USER_MODEL
 
@@ -21,11 +23,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
+load_dotenv(BASE_DIR / ".env.py")
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-^0q8$iw6yng)q#a-on576s^@vt$q2e*qc4a^@@pk5=4o%^*_(5'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+SECRET_KEY = os.getenv("SECRET_KEY")
+DEBUG = os.getenv('DEBUG', "false").lower() == "true"
+#DB_PASSWORD = os.getenv('DB_PASSWORD')
 
 ALLOWED_HOSTS = []
 

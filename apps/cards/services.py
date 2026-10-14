@@ -1,9 +1,16 @@
+import time
+
 import requests
+from django.core.files.base import ContentFile
+
 from .models import Card
 from rest_framework import status
 
 BASE_URL = "https://db.ygoprodeck.com/api/v7/cardinfo.php"
+IMAGE_URL = "https://images.ygoprodeck.com/images/cards/"
 
+# ONE TIME USE IMPORT, BUT COULD BE USED FOR UPDATING DATABASE PERIODICALLY
+# IMPORT AFTER IMPLEMENTATION OF IMAGES HAS NOT BEEN TESTED, SEEKING TO NOT TRIGGER IP BLOCK
 def normalize_card(card):
 
         return {
@@ -16,17 +23,17 @@ def normalize_card(card):
                 "defense": card.get("def"),
                 "level": card.get("level"),
                 "race": card.get("race"),
-                "attribute": card.get("attribute"),
+                "attribute": card.get("attribute")
         }
 
 def save_card(card):
 
-        #slow for now, will implement bulk create/update action at some point
-        formatted_card = normalize_card(card)
-        Card.objects.update_or_create(
-            id=formatted_card["id"],
-            defaults = formatted_card
+        card_obj, created = Card.objects.update_or_create(
+            id=card["id"],
+            defaults = normalize_card(card)
         )
+
+        return card_obj
 
 def import_all_cards():
 
@@ -38,6 +45,21 @@ def import_all_cards():
     card_data = response.json()["data"]
 
     for card in card_data:
-        save_card(card)
+        card_obj = save_card(card)
+        image_import(card_obj)
     return None
 
+def image_import(card_obj):
+
+    if card_obj.image:
+        return
+
+    time.sleep(1)
+    card_id = card_obj.id
+    target_url = "f{IMAGE_URL}{card_id}.jpg"
+    response = requests.get(target_url, timeout=30)
+    response.raise_for_status()
+
+    card_obj.image.save(f"images/{card_id}.png",
+                        ContentFile(response.content),
+                        save = True)
