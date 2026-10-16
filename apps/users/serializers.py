@@ -1,6 +1,5 @@
 from rest_framework import serializers
 
-from apps.decks.models import Deck
 from apps.users.models import User
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -11,7 +10,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ["username", "email", "password"]
         extra_kwargs = {"password": {"write_only": True}}
 
-    # creates user based on those 3 parameters, receives validade data from view
+    # creates user based on those 3 parameters, receives validated data from view
     def create(self, validated_data):
         return User.objects.create_user(
             username=validated_data["username"],

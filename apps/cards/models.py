@@ -2,7 +2,7 @@ from django.db import models
 
 class Card(models.Model):
 
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
     type = models.CharField(max_length=50)
     frameType = models.CharField(max_length=50, null=True)
