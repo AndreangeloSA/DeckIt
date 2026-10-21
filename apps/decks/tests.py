@@ -5,7 +5,6 @@ from rest_framework import status
 from apps.decks.models import Deck
 from apps.decks.models import CardsOnDeck
 
-
 class BaseDeckTestCase(APITestCase):
 
     def setUp(self):
@@ -186,6 +185,18 @@ class ManageDeckTests(BaseDeckTestCase):
             status.HTTP_400_BAD_REQUEST
         )
 
+    def test_manage_decks_POST_add_card_not_owner(self):
+
+        self.client.force_authenticate(user=self.user2)
+
+        data = self.data
+        response = self.client.post('/api/decks/manage_cards/', data)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
+        )
+
     def test_manage_decks_DELETE_no_authentication(self):
 
         data = self.data
@@ -218,15 +229,14 @@ class ManageDeckTests(BaseDeckTestCase):
 
         self.client.post('/api/decks/manage_cards/', data)
         response = self.client.delete('/api/decks/manage_cards/', data)
-        card_on_deck = CardsOnDeck.objects.get(deck=self.deck, card=self.card1)
 
         self.assertEqual(
             response.status_code,
             status.HTTP_200_OK
         )
 
-        self.assertTrue(
-            card_on_deck.objects.filter(card=self.card1).exists()
+        self.assertFalse(
+            CardsOnDeck.objects.filter(deck = self.deck, card=self.card1).exists()
         )
 
     def test_manage_decks_DELETE_remove_copy(self):
@@ -247,4 +257,15 @@ class ManageDeckTests(BaseDeckTestCase):
         self.assertEqual(
             response.json()['card_quantity'],
             card_on_deck.card_quantity - data['card_quantity']
+        )
+
+    def test_manage_decks_DELETE_remove_card_not_owner(self):
+        self.client.force_authenticate(user=self.user2)
+
+        data = self.data
+        response = self.client.delete('/api/decks/manage_cards/', data)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN
         )

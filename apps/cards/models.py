@@ -6,13 +6,14 @@ class Card(models.Model):
     name = models.CharField(max_length=100)
     type = models.CharField(max_length=50)
     frameType = models.CharField(max_length=50, null=True)
-    desc = models.CharField(max_length=500)
+    desc = models.TextField()
     atk = models.IntegerField(null=True)
     defense = models.IntegerField(null=True)
     level = models.IntegerField(null=True)
     race = models.CharField(max_length=50)
     attribute = models.CharField(max_length=50, null =True, default="unknown")
-    image = models.ImageField(upload_to="images/", blank=True)
+    #image field used only for local storage if necessary
+    #image = models.ImageField(upload_to="images/", blank=True)
 
     def __str__(self):
         return self.name

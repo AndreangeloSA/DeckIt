@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
+import sys
 from dotenv import load_dotenv
 
 from django.conf.global_settings import AUTH_USER_MODEL
@@ -23,11 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-load_dotenv(BASE_DIR / ".env.py")
+load_dotenv(BASE_DIR / ".env")
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv('DEBUG', "false").lower() == "true"
-#DB_PASSWORD = os.getenv('DB_PASSWORD')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+DJANGO_ENV = os.getenv('DJANGO_ENV')
 
 ALLOWED_HOSTS = []
 
@@ -76,14 +78,31 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+##TESTS AND MIGRATIONS PROTECTIONS
+
+RUNNING_TESTS = "test" in sys.argv
+RUNNING_MIGRATIONS = "migrate" in sys.argv
+ALLOW_REMOTE_MIGRATIONS = {
+    os.getenv('ALLOWED_REMOTE_MIGRATIONS', 'false').lower() == "true",
+}
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+if RUNNING_TESTS or (RUNNING_MIGRATIONS and not ALLOW_REMOTE_MIGRATIONS):
+    DB_PREFIX = 'LOCAL_'
+elif DJANGO_ENV == 'production':
+    DB_PREFIX = 'SUPABASE_'
+else:
+    DB_PREFIX = 'LOCAL_'
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ[f"{DB_PREFIX}DB_NAME"],
+        "USER": os.environ[f"{DB_PREFIX}DB_USER"],
+        "PASSWORD": os.environ[f"{DB_PREFIX}DB_PASSWORD"],
+        "HOST": os.getenv(f"{DB_PREFIX}DB_HOST"),
+        "PORT": os.getenv(f"{DB_PREFIX}DB_PORT", "5432"),
     }
 }
 
@@ -94,7 +113,6 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     )
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -125,7 +143,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
