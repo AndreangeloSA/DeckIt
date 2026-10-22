@@ -28,10 +28,9 @@ load_dotenv(BASE_DIR / ".env")
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv('DEBUG', "false").lower() == "true"
-DB_PASSWORD = os.getenv('DB_PASSWORD')
 DJANGO_ENV = os.getenv('DJANGO_ENV')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
 
 # Application definition
@@ -82,9 +81,9 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 RUNNING_TESTS = "test" in sys.argv
 RUNNING_MIGRATIONS = "migrate" in sys.argv
-ALLOW_REMOTE_MIGRATIONS = {
+ALLOW_REMOTE_MIGRATIONS = (
     os.getenv('ALLOWED_REMOTE_MIGRATIONS', 'false').lower() == "true",
-}
+)
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
