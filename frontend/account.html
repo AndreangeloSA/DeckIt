@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f2e5cf">
+  <title>DeckIt — Minha conta</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/account.css">
+</head>
+<body>
+<a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+  <div class="app">
+    <header class="header">
+      <div class="brand"><img src="assets/logo/deckit-contorno.png" width="2172" height="724" alt="DeckIt"></div>
+
+    </header>
+    <main id="conteudo" class="main account-page">
+      <header class="account-heading">
+        <h1>Minha conta</h1>
+        <p>Seu espaço pessoal no DeckIt.</p>
+      </header>
+      <section class="profile-card" aria-labelledby="profile-name">
+        <div class="avatar" aria-hidden="true">AS</div>
+        <div class="profile-copy">
+          <h2 id="profile-name">Andreângelo S. Andrade</h2>
+          <p>andreangelo@example.com</p>
+          <span class="member-label">Membro DeckIt</span>
+        </div>
+        <button class="edit-profile" type="button" aria-disabled="true">Editar perfil</button>
+      </section>
+      <section class="account-stats" aria-label="Resumo da coleção">
+        <article class="stat-card"><span class="stat-value">4</span><span class="stat-label">Decks</span></article>
+        <article class="stat-card"><span class="stat-value">162</span><span class="stat-label">Cartas nos decks</span></article>
+        <article class="stat-card"><span class="stat-value">24</span><span class="stat-label">Favoritas</span></article>
+      </section>
+      <section class="account-section" aria-labelledby="account-details-title">
+        <h2 id="account-details-title">Dados da conta</h2>
+        <dl class="account-details">
+          <div><dt>Nome</dt><dd>Andreângelo S. Andrade</dd></div>
+          <div><dt>E-mail</dt><dd>andreangelo@example.com</dd></div>
+          <div><dt>Idioma</dt><dd>Português (Brasil)</dd></div>
+        </dl>
+      </section>
+      <section class="account-section" aria-labelledby="account-actions-title">
+        <h2 id="account-actions-title">Conta</h2>
+        <a class="account-action" href="settings.html"><span><strong>Configurações</strong><small>Tema, idioma e preferências</small></span><span aria-hidden="true">→</span></a>
+        <button class="account-action logout-action" type="button" aria-disabled="true"><span><strong>Sair da conta</strong><small>Encerrar sua sessão neste dispositivo</small></span><span aria-hidden="true">→</span></button>
+      </section>
+      <p class="account-note">Os dados exibidos são exemplos visuais e ainda não estão vinculados a uma conta.</p>
+    </main>
+    <footer class="site-footer">
+      <p><strong>DeckIt.</strong> <span lang="en">Developed by</span> <span class="author">Andreângelo S. Andrade</span> / <a class="repository-link" href="https://github.com/AndreangeloSA/DeckIt">github.com/AndreangeloSA/DeckIt</a></p>
+    </footer>
+    <nav class="bottom-nav" aria-label="Navegação principal">
+      <a class="nav-item" href="index.html"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 10 10-8 10 8M4 9v12h6v-7h4v7h6V9"/></svg><span>Início</span></a>
+      <a class="nav-item" href="decks.html"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="3" width="12" height="17" rx="2" transform="rotate(12 14 12)"/><path d="m6 7-3 1 3 14 10-1"/></svg><span>Decks</span></a>
+      <a class="nav-item" href="search.html"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="7.7"/><path d="m16.5 16.5 5 5"/></svg><span>Cartas</span></a>
+      <a class="nav-item active" href="account.html" aria-current="page"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="9" r="3"/><path d="M5 19c1-6 13-6 14 0"/></svg><span>Perfil</span></a>
+      <a class="nav-item" href="settings.html" aria-label="Configurações"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2h5l.6 3a8 8 0 0 1 1.3.8l2.9-1 2.5 4.4-2.3 2a8 8 0 0 1 0 1.6l2.3 2-2.5 4.4-2.9-1a8 8 0 0 1-1.3.8l-.6 3h-5l-.6-3a8 8 0 0 1-1.3-.8l-2.9 1-2.5-4.4 2.3-2a8 8 0 0 1 0-1.6l-2.3-2 2.5-4.4 2.9 1A8 8 0 0 1 8.9 5Z"/><circle cx="12" cy="12" r="3.5"/></svg><span>Ajustes</span></a>
+    </nav>
+  </div>
+</body>
+</html>

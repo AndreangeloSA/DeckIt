@@ -1,0 +1,27 @@
+.search-page { display: block; max-width: 980px; margin-inline: auto; }
+.search-heading { margin-bottom: 18px; }
+.search-heading p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+.card-search-form { display: flex; align-items: center; gap: 12px; min-height: 54px; padding: 6px 8px 6px 14px; border: 1px solid #b99b77; border-radius: 14px; background: var(--surface); color: #80644b; }
+.card-search-form > .icon { width: 22px; height: 22px; flex: 0 0 22px; }
+.card-search-form input { flex: 1; min-width: 0; border: 0; outline: 0; padding: 8px 0; background: transparent; color: var(--text); font: inherit; }
+.card-search-form input::placeholder { color: var(--muted); }
+.card-search-form button { min-height: 40px; padding: 8px 15px; border: 0; border-radius: 10px; background: #a65336; color: #fff8ee; font: inherit; font-size: 14px; }
+.search-results { display: none; margin-top: 26px; }
+.search-page:has(.card-search-form input:placeholder-shown) .search-results { display: none; }
+.search-page:has(.card-search-form input:not(:placeholder-shown)) .search-results { display: block; }
+.results-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.results-heading h2 { margin: 0; font-size: 19px; }
+.results-heading span { color: var(--muted); font-size: 13px; }
+.search-card-grid { list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 12px; padding: 0; margin: 0; }
+.search-card-grid li { min-width: 0; }
+.search-card { margin: 0; padding: 9px; border: 1px solid #d5bfa0; border-radius: 13px; background: #fcf5e9; text-align: center; }
+.search-card img { display: block; width: 100%; height: auto; border: 1px solid #d5bfa0; border-radius: 7px; }
+.search-card figcaption { margin-top: 8px; color: #3e3026; font-size: clamp(11px, 2.7vw, 15px); line-height: 1.35; overflow-wrap: anywhere; }
+@media (min-width: 540px) {
+ .search-card-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+ .search-card { padding: 12px; }
+}
+@media (min-width: 1000px) {
+ .card-search-form { max-width: 720px; min-height: 60px; }
+ .search-card-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}

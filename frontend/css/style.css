@@ -1,0 +1,136 @@
+:root {
+  color-scheme: light;
+  --background: #f2e5cf;
+  --surface: #fcf5e9;
+  --text: #3e3026;
+  --muted: #78614d;
+  --icon: #80644b;
+  --gold: #94651d;
+  --border: #d5bfa0;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--background); color: var(--text); font-family: Arial, Helvetica, sans-serif; line-height: 1.4; }
+button, input, a { -webkit-tap-highlight-color: transparent; }
+button, input { font: inherit; }
+button { color: inherit; cursor: default; }
+a { color: inherit; text-decoration: none; }
+button { border: 0; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--gold); outline-offset: 5px; }
+.icon { width: 24px; height: 24px; flex-shrink: 0; }
+.app { max-width: 760px; margin-inline: auto; padding: 24px 16px 0; }
+.header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+.brand { position: relative; width: clamp(140.4px, 37.8vw, 262.8px); aspect-ratio: 1040 / 360; overflow: hidden; }
+.brand img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.icon-button { display: inline-flex; align-items: center; justify-content: center; padding: 8px; background: transparent; color: var(--icon); min-width: 44px; min-height: 44px; }
+
+.main { padding-top: 28px; padding-bottom: 32px; border-top: 1px solid var(--border); }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+h1, h2 { font-size: clamp(20px, 4.4vw, 28px); line-height: 1.25; margin: 0; font-weight: 600; letter-spacing: -.4px; }
+.text-button { display: flex; align-items: center; gap: 5px; padding: 8px 0 8px 8px; white-space: nowrap; background: none; color: var(--muted); font-size: 14px; }
+.text-button .icon { width: 16px; height: 16px; }
+.deck-list { display: grid; gap: 6px; }
+.deck { width: 100%; display: flex; align-items: center; gap: 16px; padding: 6px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 15px; text-align: left; }
+.deck img { display: block; width: 56px; height: auto; flex-shrink: 0; }
+.deck-info { display: grid; gap: 1px; flex: 1; min-width: 0; }
+.deck-info strong { font-size: clamp(16px, 3.7vw, 24px); font-weight: 600; }
+.deck-info > span { font-size: 14px; color: var(--muted); }
+.deck > .icon { color: var(--icon); width: 19px; }
+.catalog { margin-top: 23px; }
+.search-bar { display: flex; align-items: center; gap: 12px; margin-top: 10px; padding: 7px 10px 7px 16px; min-height: 57px; background: var(--surface); border: 1.5px solid #b99b77; border-radius: 15px; color: var(--icon); }
+.search-bar > .icon { width: 26px; height: 26px; }
+.search-bar input { width: 100%; min-width: 0; padding: 0; border: 0; background: transparent; font-size: 16px; opacity: 1; }
+.search-bar input::placeholder { color: #806a55; opacity: 1; }
+.search-bar .icon-button .icon { width: 27px; height: 27px; }
+.card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 15px; }
+.card { margin: 0; min-width: 0; text-align: center; }
+.card-frame { padding: 3px; border: 1px solid #c5a57a; border-radius: 10px; background: #fcf5e9; box-shadow: inset 0 0 0 2px #e9d7bc; overflow: hidden; }
+.card img { display: block; width: 100%; height: auto; border-radius: 4px; }
+figcaption { margin-top: 8px; color: #6b5441; font-size: clamp(10px, 2.5vw, 16px); overflow-wrap: break-word; }
+.create-area { display: flex; justify-content: center; margin-top: 30px; }
+.create-button { display: inline-flex; justify-content: center; align-items: center; gap: 16px; padding: 12px 24px; min-height: 54px; border: 1.5px solid #a65336; border-radius: 20px; background: #a65336; color: #fff8ee; font-size: 18px; font-weight: 600; }
+.create-button .icon { width: 28px; height: 28px; }
+.bottom-nav { position: fixed; z-index: 10; bottom: 0; left: 0; right: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 12px 8px calc(12px + env(safe-area-inset-bottom)); background: #f8eddcf5; border-top: 1px solid #d5bfa0; backdrop-filter: blur(16px); }
+.nav-item { display: flex; justify-content: flex-start; flex-direction: column; align-items: center; gap: 5px; position: relative; padding: 3px 4px 10px; background: transparent; color: var(--muted); font-size: 12px; min-height: 56px; }
+.nav-item .icon { width: 27px; height: 27px; color: var(--icon); }
+.nav-item.active, .nav-item.active .icon { color: var(--gold); }
+.nav-item.active::after { content: ""; width: 28px; height: 4px; border-radius: 8px; background: var(--gold); position: absolute; bottom: 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.skip-link { position: fixed; z-index: 20; top: 10px; left: 10px; padding: 10px; background: var(--gold); color: var(--background); transform: translateY(-200%); }
+.skip-link:focus { transform: translateY(0); }
+@media (min-width: 540px) {
+  .app { padding: 32px 30px 0; }
+  .header { margin-bottom: 36px; }
+  .deck { padding: 10px 22px; gap: 24px; border-radius: 20px; }
+  .deck img { width: 78px; }
+  .deck-info > span { font-size: 18px; }
+  .text-button { font-size: 18px; }
+  .catalog { margin-top: 32px; }
+  .search-bar { min-height: 72px; padding-inline: 22px; }
+  .search-bar input { font-size: 22px; }
+  .card-grid { gap: 28px; margin-top: 22px; }
+  .create-area { margin-top: 40px; }
+  .create-button { font-size: 22px; padding: 16px 32px; }
+}
+@media (min-width: 1000px) {
+  .app { max-width: 1320px; padding: 40px 48px; display: grid; grid-template-columns: 1fr auto; column-gap: 40px; }
+  .header { grid-column: 1; margin-bottom: 28px; }
+  .brand { width: 234px; }
+  .bottom-nav { position: static; grid-column: 2; grid-row: 1; align-self: start; align-items: start; gap: 18px; border: 0; padding: 8px 0; background: transparent; backdrop-filter: none; }
+  .nav-item { min-width: 64px; font-size: 14px; gap: 8px; }
+  .main { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(300px, .85fr) minmax(0, 1.35fr); gap: 32px 48px; align-items: start; padding-bottom: 24px; }
+  .catalog { margin-top: 0; grid-column: 2; grid-row: 1; }
+  .decks { grid-column: 1; }
+  .section-heading { min-height: 35px; margin-bottom: 18px; }
+  .deck-list { gap: 12px; }
+  .deck { min-height: 132px; gap: 18px; }
+  .deck img { width: 72px; }
+  .deck-info strong { font-size: 21px; }
+  .search-bar { margin-top: 22px; }
+  .create-area { margin-top: 24px; }
+  .card-grid { gap: 20px; }
+}
+
+
+
+.site-footer {
+  grid-column: 1 / -1;
+  padding: 20px 8px calc(112px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.site-footer p { margin: 0; }
+.site-footer strong { color: var(--gold); font-weight: 600; }
+.site-footer .author { display: inline-block; }
+@media (min-width: 1000px) {
+  .site-footer { margin-top: 24px; padding-bottom: 12px; font-size: 13px; }
+}
+.site-footer .repository-link { text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.site-footer .repository-link:hover { color: var(--gold); }
+
+/* Redução sutil dos espaços no celular, preservando o tamanho dos elementos. */
+@media (max-width: 539px) {
+  .app { padding-top: 20px; }
+  .header { margin-bottom: 21px; }
+  .main { padding-top: 21px; padding-bottom: 25px; }
+  .catalog { margin-top: 18px; }
+  .search-bar { margin-top: 6px; }
+  .card-grid { margin-top: 11px; }
+  .create-area { margin-top: 23px; }
+  .site-footer { padding-top: 16px; }
+}
+/* Mantém a assinatura no fim da tela quando a página tem pouco conteúdo. */
+.app { min-height: 100vh; min-height: 100svh; }
+.site-footer { margin-top: auto; }
+@media (max-width: 999px) {
+  .app { display: flex; flex-direction: column; }
+  .main { flex: 1 0 auto; width: 100%; }
+  .site-footer { width: 100%; }
+}
+@media (min-width: 1000px) {
+  .app { grid-template-rows: auto 1fr auto; }
+  .main { align-self: start; }
+  .site-footer { align-self: end; }
+}

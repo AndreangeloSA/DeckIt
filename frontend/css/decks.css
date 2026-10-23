@@ -1,0 +1,56 @@
+/* Estilos exclusivos da coleção de decks; identidade compartilhada em style.css. */
+.main.decks-page { display: block; }
+.back-link { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--muted); margin-bottom: 8px; font-size: 14px; }
+.back-link:hover { color: var(--gold); }
+.decks-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.decks-heading .create-button { font-size: 14px; min-height: 44px; padding: 8px 12px; gap: 8px; border-radius: 15px; }
+.decks-heading .create-button .icon { width: 23px; height: 23px; }
+.decks-toolbar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin: 20px 0; }
+.decks-toolbar .search-bar { flex: 1 1 150px; max-width: 320px; margin: 0; min-height: 40px; padding: 6px 10px; border-radius: 10px; gap: 8px; }
+.decks-toolbar input { font-size: 16px; }
+.sort-field { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; color: var(--muted); font-size: 14px; }
+.sort-field select { flex: none; width: 140px; max-width: 100%; min-width: 0; min-height: 36px; border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px; font: inherit; font-size: 13px; color: var(--text); background: var(--surface); opacity: 1; }
+.collection-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+.collection-heading h2 { font-size: 19px; }
+.deck-count { color: var(--muted); font-size: 13px; white-space: nowrap; }
+.decks-grid { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.decks-grid > li { min-width: 0; }
+.collection-deck { display: flex; height: 100%; gap: 18px; padding: 16px; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); }
+.deck-cover { flex: 0 0 76px; align-self: center; }
+.deck-cover img { display: block; width: 100%; height: auto; border-radius: 4px; box-shadow: 0 3px 8px #3e30261a; }
+.collection-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+.collection-info h3 { margin: 0; font-size: 18px; font-weight: 600; overflow-wrap: anywhere; }
+.collection-info p { margin: 4px 0 10px; color: var(--muted); font-size: 14px; }
+.open-deck { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 8px 0; border-top: 1px solid var(--border); color: var(--gold); background: transparent; text-align: left; font-size: 14px; }
+@media (min-width: 540px) {
+  .decks-heading { flex-direction: row; align-items: center; justify-content: space-between; }
+  .decks-heading .create-button { flex-shrink: 0; }
+  .decks-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  .collection-deck { flex-direction: column; gap: 18px; padding: 22px; }
+  .deck-cover { flex: none; width: 112px; }
+  .collection-info { width: 100%; }
+  .decks-toolbar { gap: 16px; }
+  .sort-field { flex-direction: column; align-items: stretch; gap: 4px; }
+}
+@media (min-width: 1000px) {
+  .decks-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+  .decks-toolbar { margin-block: 28px; }
+  .decks-toolbar .search-bar { max-width: 320px; }
+  .sort-field { flex-direction: row; align-items: center; gap: 12px; }
+  .sort-field select { min-width: 140px; }
+  .deck-cover { width: 132px; }
+  .collection-info h3 { font-size: 21px; }
+}
+.decks-page, .deck-collection { min-width: 0; }
+
+.decks-toolbar .search-bar > .icon { width: 20px; height: 20px; }
+
+/* Fundos explícitos apenas para evitar que áreas da coleção pareçam botões. */
+.decks-heading > a.create-button {
+  display: inline-flex;
+  text-decoration: none;
+  background: #a65336;
+  color: #fff8ee;
+  border-color: #a65336;
+}
+.decks-toolbar, .collection-heading, .decks-grid, .collection-info { background: transparent; }

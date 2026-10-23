@@ -1,0 +1,20 @@
+.main.single-deck-page { display: block; }
+.single-deck-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin: 12px 0 24px; }
+.single-deck-heading > span { color: var(--muted); font-size: 14px; white-space: nowrap; }
+.single-deck-grid { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 12px; margin: 0; padding: 0; }
+.single-deck-grid li { min-width: 0; }
+.deck-card { margin: 0; padding: 10px; text-align: center; background: #fcf5e9; border: 1px solid #d5bfa0; border-radius: 12px; }
+.deck-card img { display: block; width: 100%; height: auto; border: 1px solid var(--border); border-radius: 8px; }
+.deck-card figcaption { margin-top: 7px; color: #3e3026; font-size: clamp(10px, 2.8vw, 14px); line-height: 1.35; overflow-wrap: anywhere; }
+@media (min-width: 540px) {
+  .single-deck-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px 16px; }
+}
+@media (min-width: 1000px) {
+  .single-deck-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 26px 20px; }
+}
+.card-quantity { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 9px; }
+.card-quantity button { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid #d5bfa0; border-radius: 9px; background: #fcf5e9; color: #6b4932; font-size: 18px; line-height: 1; }
+.card-quantity output { min-width: 20px; color: var(--text); font-size: 14px; font-weight: 600; text-align: center; }
+.deck-actions { display: flex; justify-content: flex-end; margin: -10px 0 18px; }
+.add-card-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 8px 14px; border: 1px solid #a65336; border-radius: 12px; background: #a65336; color: #fff8ee; font: inherit; font-size: 14px; }
+.add-card-button .icon { width: 20px; height: 20px; }
