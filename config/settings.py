@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'apps.decks',
     'apps.users',
     'rest_framework',
+    "rest_framework_simplejwt.token_blacklist",
 ]
 
 MIDDLEWARE = [
@@ -83,7 +84,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 RUNNING_TESTS = "test" in sys.argv
 RUNNING_MIGRATIONS = "migrate" in sys.argv
 ALLOW_REMOTE_MIGRATIONS = (
-    os.getenv('ALLOWED_REMOTE_MIGRATIONS', 'false').lower() == "true",
+    os.getenv('ALLOWED_REMOTE_MIGRATIONS', 'false').lower() == "true"
 )
 
 # Database

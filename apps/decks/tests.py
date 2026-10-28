@@ -22,16 +22,40 @@ class BaseDeckTestCase(APITestCase):
             race="Spellcaster"
         )
 
+        self.card2 = Card.objects.create(
+            id=2,
+            name = "Blue-Eyes Ultimate Dragon",
+            type = "Fusion Monster",
+            desc = "\"Blue-Eyes White Dragon\" + \"Blue-Eyes White Dragon\" + \"Blue-Eyes White Dragon\"",
+            race = "Dragon"
+        )
+
         self.data = {
             'deck': self.deck.id,
             'card': self.card1.id,
-            'card_quantity': 1
+            'card_quantity': 1,
+            'section': "main"
         }
 
         self.data2 = {
             'deck': self.deck.id,
             'card': self.card1.id,
-            'card_quantity': 2
+            'card_quantity': 2,
+            'section': "main"
+        }
+
+        self.data3 = {
+            'deck': self.deck.id,
+            'card': self.card1.id,
+            'card_quantity': 1,
+            'section': "extra"
+        }
+
+        self.data4 = {
+            'deck': self.deck.id,
+            'card': self.card2.id,
+            'card_quantity': 1,
+            'section': "extra"
         }
 
 class CreateDeckTests(BaseDeckTestCase):
@@ -268,4 +292,38 @@ class ManageDeckTests(BaseDeckTestCase):
         self.assertEqual(
             response.status_code,
             status.HTTP_403_FORBIDDEN
+        )
+
+    def test_manage_decks_POST_add_invalid_card_to_extra_deck(self):
+
+        self.client.force_authenticate(user=self.user)
+
+        data3 = self.data3
+
+        self.client.post('/api/decks/manage_cards/', data3)
+        response = self.client.post('/api/decks/manage_cards/', data3)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST
+        )
+
+        self.assertFalse(
+            CardsOnDeck.objects.filter(deck=self.deck, card=self.card1).exists()
+        )
+
+    def test_manage_decks_POST_add_valid_card_to_extra_deck(self):
+        self.client.force_authenticate(user=self.user)
+
+        data4 = self.data4
+
+        response = self.client.post('/api/decks/manage_cards/', data4)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_201_CREATED
+        )
+
+        self.assertTrue(
+            CardsOnDeck.objects.filter(deck=self.deck, card=self.card2).exists()
         )
