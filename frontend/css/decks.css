@@ -21,7 +21,7 @@
 .collection-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
 .collection-info h3 { margin: 0; font-size: 18px; font-weight: 600; overflow-wrap: anywhere; }
 .collection-info p { margin: 4px 0 10px; color: var(--muted); font-size: 14px; }
-.open-deck { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 8px 0; border-top: 1px solid var(--border); color: var(--gold); background: transparent; text-align: left; font-size: 14px; }
+.open-deck { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 34px; padding: 6px 10px; border: 0; border-radius: 9px; color: #fff8ee; background: #a65336; text-align: center; font-size: 13px; text-decoration: none; }
 @media (min-width: 540px) {
   .decks-heading { flex-direction: row; align-items: center; justify-content: space-between; }
   .decks-heading .create-button { flex-shrink: 0; }
@@ -54,3 +54,4 @@
   border-color: #a65336;
 }
 .decks-toolbar, .collection-heading, .decks-grid, .collection-info { background: transparent; }
+.open-deck:hover { background: #91472f; }

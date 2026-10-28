@@ -7,8 +7,9 @@
   <title>DeckIt — Todos os seus decks</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/decks.css">
+  <link rel="stylesheet" href="css/i18n-layout.css">
 </head>
-<body>
+<body class="decks-document">
 <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
   <div class="app">
     <header class="header">
@@ -27,11 +28,11 @@
         <div class="search-bar" role="search" aria-label="Pesquisar decks">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="7.7"/><path d="m16.5 16.5 5 5"/></svg>
           <label class="sr-only" for="deck-search">Nome do deck</label>
-          <input id="deck-search" type="search" placeholder="Buscar decks..." disabled>
+          <input id="deck-search" type="search" placeholder="Buscar decks...">
         </div>
         <div class="sort-field">
           <label for="deck-sort">Ordenar por</label>
-          <select id="deck-sort" disabled><option>Nome (A–Z)</option></select>
+          <select id="deck-sort"><option value="name">Nome (A–Z)</option><option value="updated">Mais recentes</option></select>
         </div>
       </div>
       <section class="deck-collection" aria-labelledby="collection-title">
@@ -39,7 +40,7 @@
           <h2 id="collection-title">Minha coleção</h2>
           <span class="deck-count">4 decks</span>
         </div>
-        <ul class="decks-grid" aria-label="Meus decks">
+        <ul id="user-decks" class="decks-grid" aria-label="Meus decks">
           <li>
             <article class="collection-deck" aria-labelledby="blue-eyes-title">
               <div class="deck-cover"><img src="assets/cards/89631139.jpg" alt="Blue-Eyes White Dragon" width="421" height="614"></div>
@@ -95,5 +96,6 @@
       <a class="nav-item" href="settings.html" aria-label="Configurações"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2h5l.6 3a8 8 0 0 1 1.3.8l2.9-1 2.5 4.4-2.3 2a8 8 0 0 1 0 1.6l2.3 2-2.5 4.4-2.9-1a8 8 0 0 1-1.3.8l-.6 3h-5l-.6-3a8 8 0 0 1-1.3-.8l-2.9 1-2.5-4.4 2.3-2a8 8 0 0 1 0-1.6l-2.3-2 2.5-4.4 2.9 1A8 8 0 0 1 8.9 5Z"/><circle cx="12" cy="12" r="3.5"/></svg><span>Ajustes</span></a>
     </nav>
   </div>
+  <script src="js/app.js" defer></script>
 </body>
 </html>

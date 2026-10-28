@@ -1,0 +1,73 @@
+.settings-page, .account-page, .search-page { width: 100%; }
+/* Mantém as dimensões dos componentes estáveis entre idiomas. */
+.bottom-nav .nav-item { min-width: 0; white-space: nowrap; }
+.bottom-nav .nav-item > span { display: block; max-width: 100%; overflow: hidden; text-overflow: clip; white-space: nowrap; font-size: clamp(9px, 2.6vw, 12px); line-height: 1.2; }
+.create-area .create-button { width: 178px; min-width: 178px; white-space: nowrap; }
+.decks-heading > .create-button { width: 144px; min-width: 144px; white-space: nowrap; }
+.card-search-form > button { width: 86px; min-width: 86px; flex: 0 0 86px; padding-inline: 4px; white-space: nowrap; }
+.open-deck { height: 36px; min-height: 36px; flex: 0 0 36px; white-space: nowrap; }
+.create-actions > button { width: 148px; min-width: 148px; white-space: nowrap; }
+.edit-profile { width: 140px; min-width: 140px; white-space: nowrap; }
+.option-card { display: grid; grid-template-columns: 36px minmax(0, 1fr) 18px; align-items: center; flex-wrap: nowrap; height: 82px; min-height: 82px; }
+.option-card > span:nth-of-type(2) { min-width: 0; }
+.option-card small { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-height: 1.25; }
+.option-card .selection-mark { position: static; justify-self: end; margin: 0; }
+.account-action { height: 76px; min-height: 76px; }
+.account-action > span:first-child { min-width: 0; }
+.account-action > span:last-child { flex: 0 0 auto; }
+.account-action small { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-height: 1.25; }
+.card figcaption, .deck-card figcaption, .search-card figcaption { min-height: 2.8em; display: flex; justify-content: center; }
+.collection-info > p { min-height: 1.4em; }
+.settings-section-heading { min-height: 58px; }
+.settings-section-heading > div { min-width: 0; }
+.settings-section-heading p { min-height: 2.5em; }
+@media (max-width: 539px) {
+  .decks-heading { align-items: flex-start; }
+  .decks-heading > h1 { flex: 1 0 100%; }
+  .decks-heading > .create-button { align-self: flex-start; }
+}
+@media (min-width: 540px) {
+  .bottom-nav .nav-item > span { font-size: 14px; }
+}
+@media (min-width: 700px) {
+  .option-card { height: 112px; min-height: 112px; }
+}
+
+/* Reserva linhas para que descrições traduzidas não alterem a altura das seções. */
+.account-heading > p, .search-heading > p, .settings-heading > p {
+  min-height: 2.8em;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.settings-section-heading { height: 68px; min-height: 68px; }
+.settings-section-heading p { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.account-details > div { height: 48px; min-height: 48px; align-items: center; }
+.account-details dt { white-space: nowrap; }
+.account-details dd { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.account-note { min-height: 4.2em; display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+.create-note { min-height: 2.8em; display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.single-deck-heading h1 { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Controles da busca e do editor de decks não dependem da largura do rótulo. */
+.card-search > .card-search-submit { width: 80px; min-width: 80px; flex: 0 0 80px; height: 36px; min-height: 36px; padding-inline: 4px; white-space: nowrap; }
+.card-add-controls label { display: grid; grid-template-rows: 14px 32px; align-content: start; gap: 2px; height: 48px; min-height: 48px; overflow: hidden; font-size: 10px; line-height: 14px; white-space: nowrap; }
+.card-add-controls select { width: 100%; height: 32px; min-height: 32px; }
+.card-add-controls > button { height: 42px; min-height: 42px; max-height: 42px; display: grid; place-items: center; overflow: hidden; padding: 2px 4px; font-size: 10px; line-height: 1.15; text-align: center; white-space: normal; }
+.create-actions > a { width: 80px; text-align: center; white-space: nowrap; }
+.chosen-card label { height: 32px; min-height: 32px; overflow: hidden; white-space: nowrap; font-size: 9px; line-height: 1; }
+.chosen-card select { width: 42px; height: 28px; min-height: 28px; flex: 0 0 42px; }
+.chosen-card button { width: 64px; height: 24px; min-height: 24px; overflow: hidden; white-space: nowrap; }
+
+
+
+.settings-heading { margin-bottom: 16px; }
+.settings-page > .settings-section:first-of-type { padding-top: 14px; }
+
+
+
+.card-search > button.card-search-filter { background: transparent !important; color: var(--icon); }
+
+.card-search > button.card-search-filter:hover { width: 44px; min-width: 44px; height: 44px; min-height: 44px; border-radius: 9px; background: color-mix(in srgb, var(--border) 35%, transparent) !important; transition: background-color 160ms ease; }
+
+.card-search-form > button.card-search-filter { flex: 0 0 44px; width: 44px; min-width: 44px; height: 44px; min-height: 44px; padding: 8px; background: transparent; color: var(--icon); }

@@ -1,8 +1,8 @@
 .create-deck-page { display: block; }
 .create-heading { margin: 8px 0 20px; }
-.create-form > label { display: block; margin-bottom: 7px; color: var(--muted); font-size: 13px; }
-.create-form > input { width: 100%; max-width: 520px; min-height: 44px; padding: 9px 12px; border: 1px solid var(--border); border-radius: 11px; background: var(--surface); color: var(--text); font: inherit; }
-.create-form > input::placeholder { color: var(--muted); }
+.create-form > label { display: block; margin-bottom: 7px; color: var(--text); font-size: 19px; line-height: 1.25; font-weight: 600; }
+.create-form > input, .create-form > textarea { width: 100%; max-width: 520px; min-height: 44px; padding: 9px 12px; border: 1px solid var(--border); border-radius: 11px; background: var(--surface); color: var(--text); font: inherit; }
+.create-form > input::placeholder, .create-form > textarea::placeholder { color: var(--muted); }
 .card-choice { margin-top: 24px; }
 .card-choice h2 { margin: 0 0 12px; font-size: 19px; }
 .choice-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; list-style: none; padding: 0; margin: 0; }
@@ -16,11 +16,11 @@
 .create-actions button { min-height: 42px; padding: 8px 15px; border: 0; border-radius: 11px; background: #a65336; color: #fff8ee; font: inherit; font-size: 14px; }
 .create-note { margin-top: 16px; color: var(--muted); font-size: 12px; }
 @media (min-width: 700px) { .choice-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; } }
-.card-search { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 5px 6px 5px 12px; border: 1px solid var(--border); border-radius: 11px; background: var(--surface); color: var(--muted); }
+.card-search { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 5px 6px 5px 12px; border: 1px solid var(--border); border-radius: 11px; background: var(--surface); color: var(--muted); }
 .card-search .icon { width: 20px; height: 20px; flex: 0 0 20px; }
 .card-search input { flex: 1; min-width: 0; padding: 6px 0; border: 0; background: transparent; color: var(--text); font: inherit; }
 .card-search input::placeholder { color: var(--muted); }
-.card-search > button, .card-add-controls > button { min-height: 36px; padding: 7px 11px; border: 0; border-radius: 9px; background: #a65336; color: #fff8ee; font: inherit; font-size: 12px; }
+.card-search > .card-search-submit, .card-add-controls > button { min-height: 36px; padding: 7px 11px; border: 0; border-radius: 9px; background: #a65336; color: #fff8ee; font: inherit; font-size: 12px; }
 .builder-card { display: flex; flex-direction: column; gap: 8px; height: 100%; padding: 8px; border: 1px solid #d5bfa0; border-radius: 11px; background: #fcf5e9; }
 .builder-card h3 { margin: 0; color: #3e3026; font-size: clamp(11px, 2.5vw, 14px); line-height: 1.3; overflow-wrap: anywhere; }
 .builder-card img { display: block; width: 100%; height: auto; border-radius: 6px; }
@@ -54,3 +54,34 @@
 @media (min-width: 1000px) {
   .deck-empty-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
+.builder-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; list-style: none; margin: 14px 0 0; padding: 0; }
+.builder-card-grid[hidden] { display: none !important; }
+.builder-card-grid li { min-width: 0; }
+.chosen-card { display: flex; align-items: center; gap: 9px; min-width: 0; padding: 8px; border: 1px solid #d5bfa0; border-radius: 10px; background: #fffaf1; }
+.chosen-card > img { width: 40%; max-width: 74px; height: auto; border-radius: 5px; }
+.chosen-card > div { display: grid; gap: 6px; min-width: 0; color: #3e3026; font-size: 11px; }
+.chosen-card strong { overflow-wrap: anywhere; }
+.chosen-card label { display: flex; align-items: center; gap: 5px; }
+.chosen-card select { min-height: 28px; border: 1px solid #d5bfa0; border-radius: 6px; background: #fff; }
+.chosen-card button { border: 0; background: transparent; color: #a65336; text-align: left; font-size: 11px; }
+/* Cartas selecionadas: arte em toda a largura, controles abaixo. */
+.chosen-card { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
+.chosen-card > img { display: block; width: 100%; max-width: none; height: auto; align-self: stretch; }
+.chosen-card > div { width: 100%; }
+
+.create-form > textarea { min-height: 96px; resize: vertical; line-height: 1.45; }
+
+
+.deck-info-editor { max-width: 520px; margin: 0 0 18px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.deck-info-editor > summary { display: flex; align-items: center; min-height: 46px; padding: 10px 14px; color: var(--text); font-size: 15px; font-weight: 600; cursor: pointer; list-style: none; }
+.deck-info-editor > summary::-webkit-details-marker { display: none; }
+.deck-info-editor > summary::after { content: "+"; margin-left: auto; color: var(--muted); font-size: 21px; font-weight: 400; }
+.deck-info-editor[open] > summary::after { content: "−"; }
+.deck-info-fields { display: grid; gap: 7px; padding: 0 14px 14px; }
+.deck-info-fields > label { margin-top: 5px; color: var(--text); font-size: 19px; line-height: 1.25; font-weight: 600; }
+.deck-info-fields > input, .deck-info-fields > textarea { width: 100%; min-height: 44px; padding: 9px 12px; border: 1px solid var(--border); border-radius: 11px; background: var(--surface); color: var(--text); font: inherit; }
+.deck-info-fields > textarea { min-height: 96px; resize: vertical; line-height: 1.45; }
+.deck-info-fields > input::placeholder, .deck-info-fields > textarea::placeholder { color: var(--muted); }
+.card-search > button.search-filter { background: transparent; color: var(--icon); }
+
+.card-search > .card-search-filter { background: transparent; color: var(--icon); }

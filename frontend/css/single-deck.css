@@ -18,3 +18,7 @@
 .deck-actions { display: flex; justify-content: flex-end; margin: -10px 0 18px; }
 .add-card-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 8px 14px; border: 1px solid #a65336; border-radius: 12px; background: #a65336; color: #fff8ee; font: inherit; font-size: 14px; }
 .add-card-button .icon { width: 20px; height: 20px; }
+.single-deck-description { margin: -10px 0 24px; padding: 16px 18px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
+.single-deck-description[hidden] { display: none; }
+.single-deck-description h2 { margin: 0 0 6px; color: var(--text); font-size: 16px; }
+.single-deck-description p { margin: 0; color: var(--muted); line-height: 1.55; overflow-wrap: anywhere; }

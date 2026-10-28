@@ -1,11 +1,11 @@
-.search-page { display: block; max-width: 980px; margin-inline: auto; }
+.search-page { display: block; max-width: none; margin-inline: 0; }
 .search-heading { margin-bottom: 18px; }
 .search-heading p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
 .card-search-form { display: flex; align-items: center; gap: 12px; min-height: 54px; padding: 6px 8px 6px 14px; border: 1px solid #b99b77; border-radius: 14px; background: var(--surface); color: #80644b; }
 .card-search-form > .icon { width: 22px; height: 22px; flex: 0 0 22px; }
 .card-search-form input { flex: 1; min-width: 0; border: 0; outline: 0; padding: 8px 0; background: transparent; color: var(--text); font: inherit; }
 .card-search-form input::placeholder { color: var(--muted); }
-.card-search-form button { min-height: 40px; padding: 8px 15px; border: 0; border-radius: 10px; background: #a65336; color: #fff8ee; font: inherit; font-size: 14px; }
+.card-search-form > .card-search-submit { min-height: 40px; padding: 8px 12px; border: 0; border-radius: 10px; background: #a65336; color: #fff8ee; font: inherit; font-size: 14px; }
 .search-results { display: none; margin-top: 26px; }
 .search-page:has(.card-search-form input:placeholder-shown) .search-results { display: none; }
 .search-page:has(.card-search-form input:not(:placeholder-shown)) .search-results { display: block; }
@@ -25,3 +25,10 @@
  .card-search-form { max-width: 720px; min-height: 60px; }
  .search-card-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
+.search-results[hidden] { display: none !important; }
+
+.card-search-form > button.search-filter { background: transparent; color: var(--icon); }
+
+.card-search-form > .card-search-filter { background: transparent; color: var(--icon); }
+
+.card-search-form > button.card-search-filter:hover { width: 44px; min-width: 44px; height: 44px; min-height: 44px; border-radius: 9px; background: color-mix(in srgb, var(--border) 35%, transparent) !important; transition: background-color 160ms ease; }
