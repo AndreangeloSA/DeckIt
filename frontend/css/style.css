@@ -186,3 +186,4 @@ figcaption { margin-top: 8px; color: #6b5441; font-size: clamp(10px, 2.5vw, 16px
 .card-search-filter > .icon { display: block; width: 27px; height: 27px; }
 .card-search-filter:hover { width: 44px; min-width: 44px; height: 44px; min-height: 44px; border-radius: 9px; background: color-mix(in srgb, var(--border) 35%, transparent); transition: background-color 160ms ease; }
 .card-search-submit { flex: 0 0 80px; width: 80px; min-width: 80px; min-height: 38px; padding: 6px 8px; border: 0; border-radius: 9px; background: #a65336; color: #fff8ee; font: inherit; font-size: 13px; white-space: nowrap; }
+.site-footer .site-disclaimer { margin: 5px auto 0; max-width: 760px; color: var(--muted); font-size: 10px; line-height: 1.45; }

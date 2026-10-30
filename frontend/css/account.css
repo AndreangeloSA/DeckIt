@@ -34,6 +34,8 @@
  .stat-label { font-size: 13px; }
  .account-details { padding-inline: 20px; }
 }
-/* Com um único indicador, o cartão de decks acompanha a largura do perfil. */
-.account-stats { grid-template-columns: minmax(0, 1fr); }
-.account-stats .stat-card { width: 90px; height: 90px; aspect-ratio: 1; align-content: center; justify-self: start; }
+.account-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.account-stats .stat-card { width: 100%; min-width: 0; aspect-ratio: 1; height: auto; padding: 6px 4px; align-content: center; justify-self: stretch; }
+.stat-card .stat-value { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stat-card .stat-value.stat-text { font-size: clamp(9px, 2.5vw, 13px); }
+.stat-card .stat-label { max-width: 100%; font-size: clamp(8px, 2vw, 11px); line-height: 1.2; }

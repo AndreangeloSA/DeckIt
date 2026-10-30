@@ -31,7 +31,10 @@
         <button class="edit-profile" type="button" aria-disabled="true">Editar perfil</button>
       </section>
       <section class="account-stats" aria-label="Resumo da coleção">
-        <article class="stat-card"><span class="stat-value">4</span><span class="stat-label">Decks</span></article>
+        <article class="stat-card"><span class="stat-value" data-profile-stat="decks">4</span><span class="stat-label">Decks</span></article>
+        <article class="stat-card"><span class="stat-value" data-profile-stat="cards">0</span><span class="stat-label">Cartas totais</span></article>
+        <article class="stat-card"><span class="stat-value stat-text" data-profile-stat="most-used">—</span><span class="stat-label">Carta mais utilizada</span></article>
+        <article class="stat-card"><span class="stat-value" data-profile-stat="favorites">0</span><span class="stat-label">Cartas favoritas</span></article>
       </section>
       <section class="account-section" aria-labelledby="account-details-title">
         <h2 id="account-details-title">Dados da conta</h2>
@@ -50,6 +53,7 @@
     </main>
     <footer class="site-footer">
       <p><strong>DeckIt.</strong> <span lang="en">Developed by</span> <span class="author">Andreângelo S. Andrade</span> / <a class="repository-link" href="https://github.com/AndreangeloSA/DeckIt">github.com/AndreangeloSA/DeckIt</a></p>
+      <p class="site-disclaimer">DeckIt é um projeto independente, não oficial e não afiliado à Konami ou aos titulares de Yu-Gi-Oh!.</p>
     </footer>
     <nav class="bottom-nav" aria-label="Navegação principal">
       <a class="nav-item" href="index.html"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 10 10-8 10 8M4 9v12h6v-7h4v7h6V9"/></svg><span>Início</span></a>

@@ -43,7 +43,7 @@
       "As preferências ficam salvas neste navegador.": "Preferences are saved in this browser.",
       "Pesquisar cartas": "Search cards", "Encontre uma carta para sua coleção.": "Find a card for your collection.",
       "Buscar": "Search", "Resultados": "Results", "Nome da carta": "Card name", "Cartas": "Cards",
-      "Perfil": "Profile", "Decks": "Decks", "Ajustes": "Settings", "Navegação principal": "Main navigation",
+      "Perfil": "Profile", "Decks": "Decks", "Ajustes": "Settings", "Cartas totais": "Total cards", "Carta mais utilizada": "Most used card", "Cartas favoritas": "Favorite cards", "Navegação principal": "Main navigation",
       "Pesquisar cartas pelo nome": "Search cards by name", "Pesquisar decks": "Search decks",
       "Criar deck": "Create deck", "Editar deck": "Edit deck", "Editar informações do deck": "Edit deck details", "Informações do deck": "Deck details", "Salvar deck": "Save deck",
       "Salvar alterações": "Save changes", "Cancelar": "Cancel", "Cartas adicionadas ao deck": "Cards added to the deck",
@@ -53,7 +53,7 @@
       "carta encontrada": "card found", "cartas encontradas": "cards found", "Abrir deck": "Open deck",
       "Você ainda não criou decks.": "You have not created any decks yet.", "Nenhum deck encontrado.": "No decks found.",
       "Este deck ainda não tem cartas.": "This deck does not have any cards yet.", "Não foi possível salvar os decks neste navegador.": "Could not save decks in this browser.",
-      "Adicione pelo menos uma carta ao deck.": "Add at least one card to the deck.", "Todos os decks": "All decks"
+      "Adicione pelo menos uma carta ao deck.": "Add at least one card to the deck.", "Todos os decks": "All decks", "DeckIt é um projeto independente, não oficial e não afiliado à Konami ou aos titulares de Yu-Gi-Oh!.": "DeckIt is an independent, unofficial project and is not affiliated with Konami or the Yu-Gi-Oh! rights holders."
     },
     es: {
       "DeckIt — Início": "DeckIt — Inicio", "DeckIt — Todos os seus decks": "DeckIt — Todos tus mazos",
@@ -80,7 +80,7 @@
       "Reduzir animações": "Reducir animaciones", "Usar transições mais discretas": "Usar transiciones más discretas",
       "As preferências ficam salvas neste navegador.": "Las preferencias se guardan en este navegador.",
       "Encontre uma carta para sua coleção.": "Encuentra una carta para tu colección.", "Buscar": "Buscar", "Resultados": "Resultados",
-      "Nome da carta": "Nombre de la carta", "Cartas": "Cartas", "Perfil": "Perfil", "Decks": "Mazos", "Ajustes": "Ajustes",
+      "Nome da carta": "Nombre de la carta", "Cartas": "Cartas", "Perfil": "Perfil", "Decks": "Mazos", "Ajustes": "Ajustes", "Cartas totais": "Cartas totales", "Carta mais utilizada": "Carta más utilizada", "Cartas favoritas": "Cartas favoritas",
       "Navegação principal": "Navegación principal", "Pesquisar cartas pelo nome": "Buscar cartas por nombre", "Pesquisar decks": "Buscar mazos",
       "Editar deck": "Editar mazo", "Editar informações do deck": "Editar información del mazo", "Informações do deck": "Información del mazo", "Salvar deck": "Guardar mazo", "Salvar alterações": "Guardar cambios", "Cancelar": "Cancelar",
       "Cartas adicionadas ao deck": "Cartas añadidas al mazo", "Cartas de exemplo": "Cartas de ejemplo", "Adicionar carta": "Añadir carta",
@@ -89,7 +89,7 @@
       "carta encontrada": "carta encontrada", "cartas encontradas": "cartas encontradas", "Abrir deck": "Abrir mazo",
       "Você ainda não criou decks.": "Todavía no has creado mazos.", "Nenhum deck encontrado.": "No se encontraron mazos.",
       "Este deck ainda não tem cartas.": "Este mazo todavía no tiene cartas.", "Não foi possível salvar os decks neste navegador.": "No se pudieron guardar los mazos en este navegador.",
-      "Adicione pelo menos uma carta ao deck.": "Añade al menos una carta al mazo."
+      "Adicione pelo menos uma carta ao deck.": "Añade al menos una carta al mazo.", "DeckIt é um projeto independente, não oficial e não afiliado à Konami ou aos titulares de Yu-Gi-Oh!.": "DeckIt es un proyecto independiente y no oficial, sin afiliación con Konami ni con los titulares de Yu-Gi-Oh!."
     }
   };
   Object.assign(translations.en, {
@@ -478,8 +478,25 @@
     }
     initSettings();
 
-    const profileCount = $(".account-stats .stat-value");
-    if (profileCount) profileCount.textContent = String(decks.length);
+    const stats = $(".account-stats");
+    if (stats) {
+      const deckCount = $('[data-profile-stat="decks"]', stats);
+      const cardCount = $('[data-profile-stat="cards"]', stats);
+      const mostUsedField = $('[data-profile-stat="most-used"]', stats);
+      const favoriteCount = $('[data-profile-stat="favorites"]', stats);
+      const totalCopies = decks.reduce((sum, deck) => sum + totalCards(deck), 0);
+      const usage = new Map();
+      decks.forEach(deck => (deck.cards || []).forEach(item => {
+        const id = String(item.id);
+        usage.set(id, (usage.get(id) || 0) + (Number(item.quantity) || 0));
+      }));
+      const mostUsedId = Array.from(usage.entries()).sort((a, b) => b[1] - a[1])[0]?.[0];
+      const mostUsedCard = mostUsedId ? getCard(mostUsedId) : null;
+      if (deckCount) deckCount.textContent = String(decks.length);
+      if (cardCount) cardCount.textContent = String(totalCopies);
+      if (mostUsedField) mostUsedField.textContent = mostUsedCard ? mostUsedCard.name : "—";
+      if (favoriteCount) favoriteCount.textContent = "0";
+    }
   }
 
   document.addEventListener("DOMContentLoaded", init);

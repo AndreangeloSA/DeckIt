@@ -20,13 +20,14 @@
     <main id="conteudo" class="main single-deck-page">
       <a class="back-link" href="decks.html"><span aria-hidden="true">←</span> Todos os seus decks</a>
       <header class="single-deck-heading">
-        <h1>Blue-Eyes</h1>
+        <div class="single-deck-title">
+          <h1>Blue-Eyes</h1>
+          <section id="single-deck-description" class="single-deck-description" aria-label="Descrição" hidden>
+            <p></p>
+          </section>
+        </div>
         <span>42 cartas</span>
       </header>
-      <section id="single-deck-description" class="single-deck-description" aria-labelledby="single-deck-description-title" hidden>
-        <h2 id="single-deck-description-title">Descrição</h2>
-        <p></p>
-      </section>
       <div class="deck-actions">
         <button id="add-card-button" class="add-card-button" type="button">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 3v18M3 12h18"/></svg>
@@ -51,6 +52,7 @@
     </main>
     <footer class="site-footer">
       <p><strong>DeckIt.</strong> <span lang="en">Developed by</span> <span class="author">Andreângelo S. Andrade</span> / <a class="repository-link" href="https://github.com/AndreangeloSA/DeckIt">github.com/AndreangeloSA/DeckIt</a></p>
+      <p class="site-disclaimer">DeckIt é um projeto independente, não oficial e não afiliado à Konami ou aos titulares de Yu-Gi-Oh!.</p>
     </footer>
     <nav class="bottom-nav" aria-label="Navegação principal">
       <a class="nav-item" href="index.html"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 10 10-8 10 8M4 9v12h6v-7h4v7h6V9"/></svg><span>Início</span></a>

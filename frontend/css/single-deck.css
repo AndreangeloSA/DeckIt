@@ -1,5 +1,5 @@
 .main.single-deck-page { display: block; }
-.single-deck-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin: 12px 0 24px; }
+.single-deck-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin: 12px 0 24px; }
 .single-deck-heading > span { color: var(--muted); font-size: 14px; white-space: nowrap; }
 .single-deck-grid { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 12px; margin: 0; padding: 0; }
 .single-deck-grid li { min-width: 0; }
@@ -18,7 +18,8 @@
 .deck-actions { display: flex; justify-content: flex-end; margin: -10px 0 18px; }
 .add-card-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 8px 14px; border: 1px solid #a65336; border-radius: 12px; background: #a65336; color: #fff8ee; font: inherit; font-size: 14px; }
 .add-card-button .icon { width: 20px; height: 20px; }
-.single-deck-description { margin: -10px 0 24px; padding: 16px 18px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
+.single-deck-title { flex: 1; min-width: 0; }
+.single-deck-description { margin: 8px 0 0; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
 .single-deck-description[hidden] { display: none; }
 .single-deck-description h2 { margin: 0 0 6px; color: var(--text); font-size: 16px; }
 .single-deck-description p { margin: 0; color: var(--muted); line-height: 1.55; overflow-wrap: anywhere; }
