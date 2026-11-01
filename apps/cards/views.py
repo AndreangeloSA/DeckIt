@@ -1,18 +1,20 @@
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.cards.models import Card
 from apps.cards.serializers import CardSerializer
 
-
 class CardSearchView(APIView):
 
     def get(self,request):
+        permission_classes = [AllowAny]
 
         #retrieves all cards from database
         cards = Card.objects.all()
 
         #verifies search parameters
+        card_id = request.query_params.get('id')
         card_name = request.query_params.get("name")
         card_type = request.query_params.get("type")
         card_attribute = request.query_params.get("attribute")
@@ -29,6 +31,8 @@ class CardSearchView(APIView):
         card_level_max = request.query_params.get("level_max")
 
         #filters cards based on basic parameters
+        if card_id:
+            cards = cards.filter(id__iexact=card_id)
         if card_name:
             cards = cards.filter(name__icontains=card_name)
         if card_type:

@@ -16,10 +16,10 @@ REST API built with Python, Django and Django REST Framework for managing Yu-Gi-
 - User registration, JWT login and access token refresh.
 - Logout through refresh token blacklisting.
 - Deck creation, listing, retrieval, editing and deletion with ownership checks.
-- Optional deck descriptions.
+- Favorite cards
 - Main, Extra and Side Deck models and validation logic, currently under development.
 
-The frontend prototype is maintained on the `feat/frontend` branch. Password recovery, profile editing, user images and favorites are not implemented in the current API.
+The frontend prototype is maintained on the `feat/frontend` branch. Password recovery, profile editing and user images are not implemented in the current API.
 
 ### Known implementation issues
 
@@ -239,21 +239,23 @@ Logout uses the same body at `/api/users/logout/`, together with the access-toke
 
 ## Endpoints
 
-| Method | Endpoint | Authentication | Description |
-|---|---|---|---|
-| POST | `/api/users/register/` | Public | Register a user |
-| POST | `/api/users/token/` | Public | Obtain access and refresh tokens |
-| POST | `/api/users/token/refresh/` | Refresh token in body | Refresh an access token |
-| POST | `/api/users/logout/` | JWT | Blacklist the supplied refresh token |
-| GET | `/api/cards/search/` | Public | Search cards |
-| POST | `/api/decks/create/` | JWT | Create a deck |
-| PATCH | `/api/decks/edit/<deck_id>` | JWT, owner | Edit name and description |
-| DELETE | `/api/decks/delete/<deck_id>` | JWT, owner | Delete a deck |
-| POST/DELETE | `/api/decks/manage_cards/` | JWT, owner | Add or remove copies of a card |
-| GET | `/api/decks/decks/<deck_id>/` | JWT, owner | Retrieve a deck and its cards |
-| GET | `/api/decks/decklist/` | JWT | List the user's decks |
-
-The edit and delete routes currently have **no trailing slash**. Use their paths exactly as shown.
+| Method      | Endpoint                         | Authentication     | Description                                     |
+|-------------|----------------------------------|--------------------|-------------------------------------------------|
+| POST        | `/api/users/register/`           | Public             | Register a user                                 |
+| POST        | `/api/users/token/`              | Public             | Obtain access and refresh tokens                |
+| POST        | `/api/users/token/refresh/`      | Refresh token in body | Refresh an access token                         |
+| POST        | `/api/users/logout/`             | JWT                | Blacklist the supplied refresh token            |
+| POST        | `/api/users/favorite/<card_id>/` | JWT                | Adds card to list of favourites                 |
+| DELETE      | `/api/users/favorite/<card_id>/` | JWT                | Removes card from list of favourites            |
+| GET         | `/api/users/favorite/`           | JWT                | Returns list of favorited cards and their total |
+| GET         | `/api/cards/search/`             | Public             | Search cards                                    |
+| POST        | `/api/decks/create/`             | JWT                | Create a deck                                   |
+| PATCH       | `/api/decks/edit/<deck_id>/`     | JWT, owner         | Edit name and description                       |
+| DELETE      | `/api/decks/delete/<deck_id>/`   | JWT, owner         | Delete a deck                                   |
+| POST/DELETE | `/api/decks/manage_cards/`       | JWT, owner         | Add or remove copies of a card                  |
+| GET         | `/api/decks/decks/<deck_id>/`    | JWT, owner         | Retrieve a deck and its cards                   |
+| GET         | `/api/decks/decklist/`           | JWT                | List the user's decks                           |
+| GET         | `/api/decks/card_usage_stats/`   | JWT, owner         | Retrieves card usage stats                      |
 
 ### Create or edit a deck
 

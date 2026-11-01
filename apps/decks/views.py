@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from apps.decks.models import Deck, CardsOnDeck
 from apps.decks.serializers import DeckSerializer, CardQuantitySerializer
+from apps.users.models import FavoriteCards
 
 #Creates new deck
 class CreateDeck(APIView):
@@ -293,3 +294,28 @@ class EditDeck(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class CardUsageStats(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+
+        total_cards_used = (
+            CardsOnDeck.objects
+            .filter(deck__user=request.user)
+            .aggregate(total=Sum("card_quantity"))["total"]
+            or 0
+        )
+
+        most_used_card = (
+            CardsOnDeck.objects
+            .filter(deck__user=request.user)
+            .values("card_id", "card__name")
+            .annotate(total=Sum("card_quantity"))
+            .order_by("-total", "card_id")
+            .first()
+        )
+
+        card_stats = dict(total_cards_used=total_cards_used, most_used_card=most_used_card)
+
+        return Response(card_stats, status=status.HTTP_200_OK)
