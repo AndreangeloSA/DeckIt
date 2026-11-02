@@ -17,8 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import (TokenObtainPairView,TokenRefreshView,)
-from apps.decks.views import CreateDeck, ViewDeck, DeckList, ManageCards
-from apps.users.views import RegisterView
+from apps.decks.views import CreateDeck, ViewDeck, DeckList, ManageCards, EditDeck, DeckDelete, CardUsageStats
+from apps.users.views import RegisterView, Logout, Favorite
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -30,6 +30,12 @@ urlpatterns = [
     path('token/refresh/',TokenRefreshView.as_view(),name='token_refresh'),
     path('create/',CreateDeck.as_view(),name='create'),
     path('manage_cards/', ManageCards.as_view(), name='manage_cards'),
+    path('delete/', DeckDelete.as_view(), name='delete'),
+    path('edit/', EditDeck.as_view(), name='edit'),
     path('decks/<int:deck_id>/', ViewDeck.as_view(), name='view'),
     path('decklist/', DeckList.as_view(), name='decklist'),
+    path('logout/', Logout.as_view(), name='logout'),
+    path('favorite/', Favorite.as_view(), name='favorite'),
+    path('card_usage_stats/', CardUsageStats.as_view(), name='card_usage_stats'),
+    path('favorite/', Favorite.as_view(), name='favorite-list')
 ]

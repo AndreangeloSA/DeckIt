@@ -65,3 +65,11 @@ class CardSearchTests(APITestCase):
                 "Blue",
                 card["name"]
             )
+
+    def test_search_cards_by_parameter_range(self):
+        response = self.client.get("/api/cards/search/", {"atk_min": 2000, "atk_max": 3000})
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK
+        )

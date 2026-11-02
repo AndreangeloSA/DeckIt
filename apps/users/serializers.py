@@ -1,6 +1,5 @@
 from rest_framework import serializers
-
-from apps.users.models import User
+from apps.users.models import User, FavoriteCards
 
 class RegisterSerializer(serializers.ModelSerializer):
 
@@ -16,3 +15,12 @@ class RegisterSerializer(serializers.ModelSerializer):
             username=validated_data["username"],
             email=validated_data["email"],
             password=validated_data["password"])
+
+class FavoriteCardsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FavoriteCards
+        fields = ["id", "card", "user"]
+        read_only_fields = ["user", "id"]
+
+    def create(self, validated_data):
+        return FavoriteCards.objects.create(**validated_data)
