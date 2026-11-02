@@ -1,14 +1,22 @@
+from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from apps.cards.models import Card
 from apps.cards.serializers import CardSerializer
 
+class CardSearchPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
+
 class CardSearchView(APIView):
 
-    def get(self,request):
-        permission_classes = [AllowAny]
+    permission_classes = [AllowAny]
+    pagination_class = CardSearchPagination
+
+    def get(self, request):
 
         #retrieves all cards from database
         cards = Card.objects.all()
@@ -33,8 +41,6 @@ class CardSearchView(APIView):
         #filters cards based on basic parameters
         if card_id:
             cards = cards.filter(id__iexact=card_id)
-        if card_name:
-            cards = cards.filter(name__icontains=card_name)
         if card_type:
             cards = cards.filter(type__iexact=card_type)
         if card_attribute:
@@ -43,6 +49,8 @@ class CardSearchView(APIView):
             cards = cards.filter(race__iexact=card_race)
         if card_frametype:
             cards = cards.filter(frameType__iexact=card_frametype)
+        if card_name:
+            cards = cards.filter(name__icontains=card_name)
 
         #filters based on complex parameters and ranges
         def apply_range(queryset, field, exact=None, minimum=None, maximum=None):
@@ -61,7 +69,10 @@ class CardSearchView(APIView):
         cards = apply_range(cards, "def", card_def_exact, card_def_min, card_def_max)
         cards = apply_range(cards, "level", card_level_exact, card_level_min, card_level_max)
 
-        #Converts card object into json
-        serializer = CardSerializer(cards, many=True, context={'request': request})
+        cards.order_by("id")
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(cards, request, view=self)
 
-        return Response(serializer.data)
+        serializer = CardSerializer(page, many=True, context={'request': request})
+
+        return paginator.get_paginated_response(serializer.data)

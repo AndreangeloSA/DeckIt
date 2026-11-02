@@ -8,6 +8,7 @@
 .setting-options { display: grid; gap: 10px; margin: 0; padding: 0; border: 0; }
 .setting-options legend, .setting-label { margin-bottom: 10px; color: var(--muted); font-size: 13px; }
 .option-card { position: relative; display: flex; align-items: center; gap: 13px; min-height: 66px; padding: 11px 14px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
+.option-card { cursor: pointer; }
 .option-card.selected { border-color: #a65336; box-shadow: inset 0 0 0 1px #a65336; }
 .option-card input { position: absolute; opacity: 0; pointer-events: none; }
 .option-symbol { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; background: #f2e5cf; color: #815528; font-size: 20px; }

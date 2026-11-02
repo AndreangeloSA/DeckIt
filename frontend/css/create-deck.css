@@ -23,15 +23,16 @@
 .card-search > .card-search-submit, .card-add-controls > button { min-height: 36px; padding: 7px 11px; border: 0; border-radius: 9px; background: #a65336; color: #fff8ee; font: inherit; font-size: 12px; }
 .builder-card { display: flex; flex-direction: column; gap: 8px; height: 100%; padding: 8px; border: 1px solid #d5bfa0; border-radius: 11px; background: #fcf5e9; }
 .builder-card h3 { margin: 0; color: #3e3026; font-size: clamp(11px, 2.5vw, 14px); line-height: 1.3; overflow-wrap: anywhere; }
-.builder-card img { display: block; width: 100%; height: auto; border-radius: 6px; }
+.builder-card img { display: block; width: 78%; height: auto; margin-inline: auto; border-radius: 6px; }
 .card-add-controls { display: flex; flex-direction: column; gap: 7px; margin-top: auto; }
 .card-add-controls label { display: flex; align-items: center; justify-content: space-between; gap: 5px; color: #6b5441; font-size: 11px; }
 .card-add-controls select { width: 52px; min-height: 32px; padding: 4px; border: 1px solid #d5bfa0; border-radius: 7px; background: #fffaf1; color: #3e3026; font: inherit; opacity: 1; }
 .card-add-controls > button { width: 100%; min-height: 38px; padding-inline: 5px; font-size: 11px; }
+.builder-card .card-add-controls label { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; height: auto; min-height: 0; overflow: visible; font-size: 12px; }
+.builder-card .card-add-controls select { width: 88px; min-height: 36px; text-align: center; }
 .deck-empty-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-rows: minmax(0, 1fr) auto;
   min-height: 180px;
   margin-top: 14px;
   padding: 14px;
@@ -48,11 +49,18 @@
   font-size: 13px;
   text-align: center;
 }
+.chosen-card-items { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; flex: 1 0 auto; }
+.deck-grid-actions { display: flex; justify-content: center; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid #d5bfa0; }
+.deck-grid-actions > a { display: inline-flex; align-items: center; justify-content: center; width: min(160px, 42%); min-height: 42px; padding: 8px 18px; border: 1px solid #c9ad89; border-radius: 11px; color: #6b5441; text-decoration: none; font-size: 14px; }
+.deck-grid-actions > a:hover { background: #f1e3cf; }
+.deck-grid-actions > button { width: min(170px, 46%); min-height: 42px; padding: 8px 18px; border: 1px solid #a65336; border-radius: 11px; background: #a65336; color: #fff8ee; font: inherit; font-weight: 600; }
+.deck-grid-actions > button:hover { background: #91472f; }
 @media (min-width: 540px) {
-  .deck-empty-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); min-height: 220px; gap: 16px; padding: 18px; }
+  .deck-empty-grid { min-height: 220px; gap: 16px; padding: 18px; }
+  .chosen-card-items { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 }
 @media (min-width: 1000px) {
-  .deck-empty-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .chosen-card-items { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
 .builder-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; list-style: none; margin: 14px 0 0; padding: 0; }
 .builder-card-grid[hidden] { display: none !important; }

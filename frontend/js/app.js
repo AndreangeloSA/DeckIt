@@ -2,18 +2,13 @@
   "use strict";
 
   const STORAGE_KEY = "deckit.local.decks.v1";
-  const cards = [
+  let cards = [
     { id: "46986414", name: "Dark Magician", image: "assets/cards/46986414.jpg" },
     { id: "89631139", name: "Blue-Eyes White Dragon", image: "assets/cards/89631139.jpg" },
     { id: "74677422", name: "Red-Eyes Black Dragon", image: "assets/cards/74677422.jpg" }
   ];
 
-  const starterDecks = [
-    { id: "blue-eyes", name: "Blue-Eyes", cards: [{ id: "89631139", quantity: 3 }, { id: "46986414", quantity: 2 }, { id: "74677422", quantity: 1 }] },
-    { id: "dark-magician", name: "Dark Magician", cards: [{ id: "46986414", quantity: 3 }, { id: "89631139", quantity: 1 }] },
-    { id: "red-eyes", name: "Red-Eyes", cards: [{ id: "74677422", quantity: 3 }, { id: "46986414", quantity: 1 }] },
-    { id: "red-eyes-treino", name: "Red-Eyes — Treino", cards: [{ id: "74677422", quantity: 2 }, { id: "89631139", quantity: 1 }] }
-  ];
+  const demoDeckIds = new Set(["blue-eyes", "dark-magician", "red-eyes", "red-eyes-treino"]);
 
   const LANGUAGE_KEY = "deckit.local.language";
   const translations = {
@@ -52,6 +47,10 @@
       "As cartas adicionadas aparecerão aqui.": "Cards you add will appear here.", "Pesquise para ver cartas": "Search to see cards",
       "carta encontrada": "card found", "cartas encontradas": "cards found", "Abrir deck": "Open deck",
       "Você ainda não criou decks.": "You have not created any decks yet.", "Nenhum deck encontrado.": "No decks found.",
+      "Seus decks aparecerão aqui.": "Your decks will appear here.",
+      "Desenvolvido por": "Developed by",
+      "Excluir deck": "Delete deck", "Tem certeza de que deseja excluir este deck?": "Are you sure you want to delete this deck?",
+      "Faça login para garantir persistência dos decks através de dispositivos e navegadores.": "Sign in to keep your decks synced across devices and browsers.",
       "Este deck ainda não tem cartas.": "This deck does not have any cards yet.", "Não foi possível salvar os decks neste navegador.": "Could not save decks in this browser.",
       "Adicione pelo menos uma carta ao deck.": "Add at least one card to the deck.", "Todos os decks": "All decks", "DeckIt é um projeto independente, não oficial e não afiliado à Konami ou aos titulares de Yu-Gi-Oh!.": "DeckIt is an independent, unofficial project and is not affiliated with Konami or the Yu-Gi-Oh! rights holders."
     },
@@ -88,6 +87,10 @@
       "As cartas adicionadas aparecerão aqui.": "Las cartas añadidas aparecerán aquí.", "Pesquise para ver cartas": "Busca para ver cartas",
       "carta encontrada": "carta encontrada", "cartas encontradas": "cartas encontradas", "Abrir deck": "Abrir mazo",
       "Você ainda não criou decks.": "Todavía no has creado mazos.", "Nenhum deck encontrado.": "No se encontraron mazos.",
+      "Seus decks aparecerão aqui.": "Tus mazos aparecerán aquí.",
+      "Desenvolvido por": "Desarrollado por",
+      "Excluir deck": "Eliminar mazo", "Tem certeza de que deseja excluir este deck?": "¿Seguro que quieres eliminar este mazo?",
+      "Faça login para garantir persistência dos decks através de dispositivos e navegadores.": "Inicia sesión para mantener tus mazos sincronizados entre dispositivos y navegadores.",
       "Este deck ainda não tem cartas.": "Este mazo todavía no tiene cartas.", "Não foi possível salvar os decks neste navegador.": "No se pudieron guardar los mazos en este navegador.",
       "Adicione pelo menos uma carta ao deck.": "Añade al menos una carta al mazo.", "DeckIt é um projeto independente, não oficial e não afiliado à Konami ou aos titulares de Yu-Gi-Oh!.": "DeckIt es un proyecto independiente y no oficial, sin afiliación con Konami ni con los titulares de Yu-Gi-Oh!."
     }
@@ -162,19 +165,222 @@
   }[character]));
   const getCard = id => cards.find(card => card.id === String(id));
   const totalCards = deck => (deck.cards || []).reduce((sum, card) => sum + Number(card.quantity || 0), 0);
+  const API = window.DeckItAPI;
+  let apiMode = Boolean(API && API.session);
+  let favoriteIds = new Set();
+  let apiStats = null;
+  let cardSearchSequence = 0;
+  let builderSearchSequence = 0;
+
+  async function restoreApiData() {
+    if (!API || !API.session) { apiMode = false; return false; }
+    try {
+      decks = await API.listDecks();
+      const ids = Array.from(new Set(decks.flatMap(deck => deck.cards.map(card => card.id))));
+      const loadedCards = (await Promise.all(ids.map(id => API.cardById(id).catch(() => null)))).filter(Boolean);
+      cards = [...loadedCards, ...cards.filter(card => !loadedCards.some(remote => remote.id === card.id))];
+      apiMode = true;
+      const [statsResult, favoritesResult] = await Promise.allSettled([API.getStats(), API.getFavorites()]);
+      if (statsResult.status === "fulfilled") apiStats = statsResult.value;
+      if (favoritesResult.status === "fulfilled") {
+        favoriteIds = new Set((favoritesResult.value.cards || []).map(item => String(item.card)));
+        window.__deckitFavoriteCount = favoritesResult.value.favorite_card_count || 0;
+      }
+      return true;
+    } catch (error) {
+      apiMode = false;
+      console.warn("Não foi possível carregar os dados da API.", error);
+      return false;
+    }
+  }
+
+  function updateAccountStats() {
+    const stats = $(".account-stats");
+    if (!stats) return;
+    const deckCount = $('[data-profile-stat="decks"]', stats);
+    const cardCount = $('[data-profile-stat="cards"]', stats);
+    const mostUsedField = $('[data-profile-stat="most-used"]', stats);
+    const favoriteCount = $('[data-profile-stat="favorites"]', stats);
+    const localUsage = new Map();
+    decks.forEach(deck => (deck.cards || []).forEach(item => {
+      const id = String(item.id);
+      localUsage.set(id, (localUsage.get(id) || 0) + (Number(item.quantity) || 0));
+    }));
+    const localMostUsedId = Array.from(localUsage.entries()).sort((a, b) => b[1] - a[1])[0]?.[0];
+    const localMostUsed = localMostUsedId ? getCard(localMostUsedId) : null;
+    if (deckCount) deckCount.textContent = String(decks.length);
+    if (cardCount) cardCount.textContent = String(apiStats ? apiStats.total_cards_used : decks.reduce((sum, deck) => sum + totalCards(deck), 0));
+    const remoteMostUsed = apiStats && apiStats.most_used_card;
+    if (mostUsedField) mostUsedField.textContent = remoteMostUsed ? remoteMostUsed.card__name : (localMostUsed ? localMostUsed.name : "—");
+    if (favoriteCount) favoriteCount.textContent = String(apiMode ? (window.__deckitFavoriteCount || favoriteIds.size) : 0);
+  }
+
+  async function queryCards(query, filters = {}, page = 1) {
+    if (!query.trim() && !Object.values(filters).some(value => String(value).trim())) return { results: [], count: 0, next: null };
+    if (!API) return { results: cards.filter(card => card.name.toLocaleLowerCase("pt-BR").includes(query.trim().toLocaleLowerCase("pt-BR"))), count: cards.length, next: null };
+    const payload = await API.searchCards(query.trim(), filters, page);
+    const results = payload.results || [];
+    cards = [...results, ...cards.filter(card => !results.some(remote => remote.id === card.id))];
+    return payload;
+  }
+
+  async function loadDeckCards(deck) {
+    const entries = deck.cards || [];
+    const loaded = await Promise.all(entries.map(async entry => {
+      if (getCard(entry.id)) return null;
+      return API.cardById(entry.id).catch(() => null);
+    }));
+    cards = [...loaded.filter(Boolean), ...cards];
+  }
+
+  async function syncDeckCardChanges(deckId, before, after) {
+    const beforeMap = new Map(before.map(item => [String(item.id), item]));
+    const afterMap = new Map(after.map(item => [String(item.id), item]));
+    const operations = [];
+    for (const id of new Set([...beforeMap.keys(), ...afterMap.keys()])) {
+      const oldEntry = beforeMap.get(id);
+      const newEntry = afterMap.get(id);
+      const oldQty = Number(oldEntry?.quantity) || 0;
+      const newQty = Number(newEntry?.quantity) || 0;
+      const oldSection = oldEntry?.section || "main";
+      const newSection = newEntry?.section || "main";
+      const queueQuantity = (kind, quantity, section) => {
+        let remaining = quantity;
+        while (remaining > 0) {
+          const amount = Math.min(3, remaining);
+          operations.push(kind === "add"
+            ? API.addCard({ deck: deckId, card: id, card_quantity: amount, section })
+            : API.removeCard({ deck: deckId, card: id, card_quantity: amount, section }));
+          remaining -= amount;
+        }
+      };
+      if (oldQty && newQty && oldSection !== newSection) {
+        queueQuantity("remove", oldQty, oldSection);
+        queueQuantity("add", newQty, newSection);
+      } else if (newQty > oldQty) {
+        queueQuantity("add", newQty - oldQty, newSection);
+      } else if (oldQty > newQty) {
+        queueQuantity("remove", oldQty - newQty, oldSection);
+      }
+    }
+    for (let index = 0; index < operations.length; index += 1) await operations[index];
+  }
+
+  async function toggleFavorite(cardId) {
+    if (!API || !API.session) {
+      location.href = "account.html";
+      return;
+    }
+    const id = String(cardId);
+    const wasFavorite = favoriteIds.has(id);
+    try {
+      if (favoriteIds.has(id)) {
+        await API.removeFavorite(id);
+        favoriteIds.delete(id);
+      } else {
+        await API.addFavorite(id);
+        favoriteIds.add(id);
+      }
+      const result = await API.getFavorites();
+      window.__deckitFavoriteCount = result.favorite_card_count || 0;
+      favoriteIds = new Set((result.cards || []).map(item => String(item.card)));
+    } catch (error) {
+      if (wasFavorite) favoriteIds.add(id); else favoriteIds.delete(id);
+      window.__deckitFavoriteCount = favoriteIds.size;
+      throw error;
+    }
+    updateAccountStats();
+  }
+
+  function setupAccountAuth() {
+    const panel = $("#auth-panel");
+    const content = $("#account-content");
+    if (!panel || !content) return;
+    const form = $("#auth-form");
+    const emailRow = $("#auth-email-row");
+    const emailInput = $("#auth-email");
+    const title = $("#auth-title");
+    const description = $("#auth-description");
+    const submit = $("#auth-submit");
+    const toggle = $("#auth-mode-toggle");
+    const message = $("#auth-message");
+    const logout = $("#logout-button");
+    let registerMode = false;
+
+    function showState(isAuthenticated) {
+      panel.hidden = isAuthenticated;
+      content.hidden = !isAuthenticated;
+      if (isAuthenticated && API?.session?.user) {
+        const user = API.session.user;
+        const username = user.username || "Usuário DeckIt";
+        const email = user.email || "";
+        const profileName = $("#profile-name");
+        const accountName = $("#account-name");
+        const profileEmail = $("#profile-email");
+        const accountEmail = $("#account-email");
+        if (profileName) profileName.textContent = username;
+        if (accountName) accountName.textContent = username;
+        if (profileEmail) profileEmail.textContent = email;
+        if (accountEmail) accountEmail.textContent = email || "—";
+        const avatar = $(".avatar");
+        if (avatar) avatar.textContent = username.slice(0, 2).toLocaleUpperCase();
+        const note = $("#account-note");
+        if (note) note.hidden = true;
+      }
+    }
+    function updateMode() {
+      if (title) title.textContent = registerMode ? "Criar sua conta" : "Entrar na sua conta";
+      if (description) description.textContent = registerMode ? "Crie uma conta para sincronizar seus decks e favoritos." : "Entre para sincronizar seus decks e favoritos.";
+      if (submit) submit.textContent = registerMode ? "Criar conta" : "Entrar";
+      if (toggle) toggle.textContent = registerMode ? "Já tenho uma conta" : "Criar conta";
+      if (emailRow) emailRow.hidden = !registerMode;
+      if (emailInput) emailInput.required = registerMode;
+    }
+    updateMode();
+    showState(Boolean(API?.session));
+    if (toggle) toggle.addEventListener("click", () => { registerMode = !registerMode; updateMode(); });
+    if (form) form.addEventListener("submit", async event => {
+      event.preventDefault();
+      const username = $("#auth-username")?.value.trim();
+      const password = $("#auth-password")?.value;
+      const email = emailInput?.value.trim();
+      if (!API) return;
+      if (submit) submit.disabled = true;
+      if (message) { message.hidden = true; message.textContent = ""; }
+      try {
+        if (registerMode) await API.register({ username, email, password });
+        else await API.login(username, password);
+        const loaded = await restoreApiData();
+        if (!loaded) throw new Error("A conta foi autenticada, mas não foi possível carregar seus dados.");
+        showState(true);
+        renderHome(); renderDeckList(); updateAccountStats();
+      } catch (error) {
+        if (message) { message.textContent = error.message || "Não foi possível entrar."; message.hidden = false; }
+      } finally { if (submit) submit.disabled = false; }
+    });
+    if (logout) logout.addEventListener("click", async () => {
+      if (API) await API.logout().catch(() => {});
+      apiMode = false; decks = loadDecks(); favoriteIds.clear(); apiStats = null;
+      showState(false); renderHome(); renderDeckList(); updateAccountStats();
+    });
+  }
 
   function loadDecks() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
+        if (Array.isArray(parsed)) {
+          const userDecks = parsed.filter(deck => !demoDeckIds.has(String(deck.id)));
+          if (userDecks.length !== parsed.length) localStorage.setItem(STORAGE_KEY, JSON.stringify(userDecks));
+          return userDecks;
+        }
       }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(starterDecks));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
     } catch (error) {
       console.warn("Não foi possível acessar os decks locais.", error);
     }
-    return starterDecks.map(deck => ({ ...deck, cards: deck.cards.map(card => ({ ...card })) }));
+    return [];
   }
 
   let decks = loadDecks();
@@ -185,6 +391,22 @@
       return true;
     } catch (error) {
       alert(translateValue("Não foi possível salvar os decks neste navegador."));
+      return false;
+    }
+  }
+
+  async function deleteDeckById(id) {
+    if (!confirm(translateValue("Tem certeza de que deseja excluir este deck?"))) return false;
+    try {
+      if (apiMode) await API.deleteDeck(id);
+      decks = decks.filter(deck => String(deck.id) !== String(id));
+      if (!apiMode) saveDecks();
+      updateAccountStats();
+      renderHome();
+      renderDeckList();
+      return true;
+    } catch (error) {
+      alert(error.message || "Não foi possível excluir o deck.");
       return false;
     }
   }
@@ -203,7 +425,7 @@
         '<img src="' + escapeHtml(first ? first.image : cardImage("46986414")) + '" alt="" width="421" height="614">' +
         '<span class="deck-info"><strong>' + escapeHtml(deck.name) + '</strong><span>' + totalCards(deck) + ' cartas</span></span>' +
         '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m9 4 8 8-8 8"/></svg></a>';
-    }).join("") || '<p class="empty-message">Você ainda não criou decks.</p>';
+    }).join("") || '<div class="deck empty-deck-card"><span class="empty-deck-art" aria-hidden="true"></span><span class="deck-info"><strong>Você ainda não criou decks.</strong><span>Seus decks aparecerão aqui.</span></span></div>';
     applyLanguage();
   }
 
@@ -220,39 +442,65 @@
     if (count) count.textContent = decks.length + (decks.length === 1 ? " deck" : " decks");
     list.innerHTML = visible.map(deck => {
       const first = getCard(deck.cards[0] && deck.cards[0].id);
-      return '<li><article class="collection-deck"><div class="deck-cover"><img src="' +
+      return '<li><article class="collection-deck"><button class="delete-deck-icon" type="button" data-delete-deck="' + escapeHtml(deck.id) + '" aria-label="Excluir deck" title="Excluir deck">×</button><div class="deck-cover"><img src="' +
         escapeHtml(first ? first.image : cardImage("46986414")) + '" alt="' + escapeHtml(first ? first.name : "Carta") +
         '" width="421" height="614"></div><div class="collection-info"><h3>' + escapeHtml(deck.name) +
         '</h3><p>' + totalCards(deck) + ' cartas</p><a class="open-deck" href="deck.html?id=' +
         encodeURIComponent(deck.id) + '">Abrir deck</a></div></article></li>';
-    }).join("") || '<li class="empty-decks">Nenhum deck encontrado.</li>';
+    }).join("") || '<li class="empty-decks">' + (decks.length ? 'Nenhum deck encontrado.' : 'Você ainda não criou decks.') + '</li>';
+    list.onclick = async event => {
+      const button = event.target.closest("[data-delete-deck]");
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      button.disabled = true;
+      if (!await deleteDeckById(button.getAttribute("data-delete-deck"))) button.disabled = false;
+    };
     applyLanguage();
   }
 
-  function renderSearchResults(query, target, includeAddButton) {
+  async function renderSearchResults(query, target, includeAddButton, filterForm = null, page = 1, append = false) {
     if (!target) return;
-    const normalized = query.trim().toLocaleLowerCase("pt-BR");
-    const found = normalized ? cards.filter(card => card.name.toLocaleLowerCase("pt-BR").includes(normalized)) : [];
-    target.innerHTML = found.map(card => {
-      const action = includeAddButton
-        ? '<div class="card-add-controls"><label>Qtd.<select data-add-quantity aria-label="Quantidade de ' + escapeHtml(card.name) + '">' +
-          '<option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>' +
-          '<button type="button" data-add-card="' + card.id + '">Adicionar ao deck</button></div>'
-        : '';
-      return '<li><figure class="' + (includeAddButton ? 'builder-card' : 'search-card') + '" data-card-id="' + card.id + '">' +
-        '<img src="' + escapeHtml(card.image) + '" alt="' + escapeHtml(card.name) + '" width="421" height="614">' +
-        (includeAddButton ? '<h3>' : '<figcaption>') + escapeHtml(card.name) +
-        (includeAddButton ? '</h3>' : '</figcaption>') + action + '</figure></li>';
-    }).join("");
+    const normalized = query.trim();
+    const requestId = ++cardSearchSequence;
+    let payload = { results: [], count: 0, next: null };
+    let failure = "";
+    const filters = {};
+    if (filterForm) new FormData(filterForm).forEach((value, key) => { if (key !== "q" && String(value).trim()) filters[key] = String(value).trim(); });
+    if (normalized || Object.keys(filters).length) {
+      try { payload = await queryCards(normalized, filters, page); }
+      catch (error) { failure = error.message || "Não foi possível pesquisar cartas na API."; }
+    }
+    if (requestId !== cardSearchSequence) return;
+    const found = payload.results || [];
+    const markup = failure
+      ? '<li class="search-error">' + escapeHtml(failure) + '</li>'
+      : found.map(card => {
+        const action = includeAddButton
+          ? '<div class="card-add-controls"><label>Qtd.<select data-add-quantity><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label><button type="button" data-add-card="' + card.id + '">Adicionar ao deck</button></div>'
+          : '<button class="favorite-card-button" type="button" data-favorite-card="' + card.id + '" aria-pressed="' + favoriteIds.has(card.id) + '">' + (favoriteIds.has(card.id) ? '♥' : '♡') + '</button>';
+        return '<li><figure class="' + (includeAddButton ? 'builder-card' : 'search-card') + '" data-card-id="' + card.id + '"><img src="' + escapeHtml(card.image) + '" alt="' + escapeHtml(card.name) + '" width="421" height="614">' + (includeAddButton ? '<h3>' : '<figcaption>') + escapeHtml(card.name) + (includeAddButton ? '</h3>' : '</figcaption>') + action + '</figure></li>';
+      }).join("");
+    target.innerHTML = append ? target.innerHTML + markup : markup;
     const section = target.closest(".search-results");
     if (section) {
-      section.hidden = !normalized;
+      section.hidden = !(normalized || Object.keys(filters).length);
       const count = $(".results-heading span", section);
-      if (count) count.textContent = found.length + (found.length === 1 ? " carta" : " cartas");
+      if (count) count.textContent = failure ? "" : (payload.count ?? found.length) + (Number(payload.count ?? found.length) === 1 ? " carta" : " cartas");
+      let more = $(".search-load-more", section);
+      if (!more) { more = document.createElement("button"); more.type = "button"; more.className = "search-load-more"; more.textContent = "Carregar mais"; section.append(more); }
+      more.hidden = !payload.next || Boolean(failure);
+      more.disabled = false;
+      more.onclick = async () => {
+        more.disabled = true;
+        const nextPage = Number(target.dataset.nextPage || 1) + 1;
+        target.dataset.nextPage = String(nextPage);
+        await renderSearchResults(normalized, target, includeAddButton, filterForm, nextPage, true);
+      };
+      if (!append) target.dataset.nextPage = "1";
     }
     applyLanguage();
   }
-
   function renderCreatePage() {
     const form = $("#create-deck-form");
     if (!form) return;
@@ -281,7 +529,7 @@
     function renderChosen() {
       if (!chosen) return;
       const entries = Array.from(selected.entries());
-      chosen.innerHTML = entries.length ? entries.map(([id, quantity]) => {
+      const cardsMarkup = entries.length ? entries.map(([id, quantity]) => {
         const card = getCard(id);
         if (!card) return "";
         return '<article class="chosen-card" data-selected-card="' + card.id + '"><img src="' + escapeHtml(card.image) +
@@ -290,14 +538,23 @@
           [1, 2, 3].map(value => '<option value="' + value + '"' + (quantity === value ? " selected" : "") + '>' + value + '</option>').join("") +
           '</select></label><button type="button" data-remove-card="' + card.id + '">Remover</button></div></article>';
       }).join("") : '<p>As cartas adicionadas aparecerão aqui.</p>';
+      const saveLabel = editing ? "Salvar alterações" : "Criar deck";
+      chosen.innerHTML = '<div class="chosen-card-items">' + cardsMarkup + '</div><div class="deck-grid-actions"><a href="decks.html">Cancelar</a><button id="save-deck-button" type="submit">' + saveLabel + '</button></div>';
       applyLanguage();
     }
 
-    function searchCards() {
+    async function searchCards() {
       if (!results) return;
-      const query = (search && search.value || "").trim().toLocaleLowerCase("pt-BR");
-      const found = query ? cards.filter(card => card.name.toLocaleLowerCase("pt-BR").includes(query)) : [];
-      results.innerHTML = found.map(card => '<li><article class="builder-card" data-card-id="' + card.id +
+      const query = (search && search.value || "").trim();
+      const requestId = ++builderSearchSequence;
+      let found = [];
+      let failure = "";
+      if (query) {
+        try { found = (await queryCards(query)).results; }
+        catch (error) { failure = error.message || "Não foi possível pesquisar cartas na API."; }
+      }
+      if (requestId !== builderSearchSequence) return;
+      results.innerHTML = failure ? '<li class="search-error">' + escapeHtml(failure) + '</li>' : found.map(card => '<li><article class="builder-card" data-card-id="' + card.id +
         '"><img src="' + escapeHtml(card.image) + '" alt="' + escapeHtml(card.name) + '" width="421" height="614"><h3>' +
         escapeHtml(card.name) + '</h3><div class="card-add-controls"><label>Qtd.<select data-add-quantity>' +
         '<option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>' +
@@ -305,7 +562,7 @@
       results.hidden = !query;
       const hint = $(".builder-heading span");
       if (hint) {
-        hint.textContent = query ? found.length + (found.length === 1 ? " carta encontrada" : " cartas encontradas") : "";
+        hint.textContent = failure || (query ? found.length + (found.length === 1 ? " carta encontrada" : " cartas encontradas") : "");
         hint.hidden = !query;
       }
       applyLanguage();
@@ -336,7 +593,7 @@
       if (field) selected.set(field.getAttribute("data-selected-quantity"), Math.min(3, Math.max(1, Number(field.value) || 1)));
     });
 
-    form.addEventListener("submit", event => {
+    form.addEventListener("submit", async event => {
       event.preventDefault();
       const name = nameField && nameField.value.trim();
       const description = descriptionField ? descriptionField.value.trim() : "";
@@ -358,18 +615,60 @@
         cards: Array.from(selected, ([id, quantity]) => ({ id, quantity })),
         updatedAt: now
       };
+      if (apiMode) {
+        const submitButton = $("#save-deck-button");
+        if (submitButton) submitButton.disabled = true;
+        try {
+          let saved;
+          if (editing) {
+            const updated = await API.editDeck(editing.id, { name, description });
+            await syncDeckCardChanges(editing.id, editing.cards, deck.cards);
+            saved = await API.getDeck(editing.id).catch(() => ({ ...updated, cards: deck.cards }));
+          } else {
+            saved = await API.createDeck({ name, description });
+            for (const [cardId, quantity] of selected) {
+              let remaining = quantity;
+              while (remaining > 0) {
+                const amount = Math.min(3, remaining);
+                await API.addCard({ deck: saved.id, card: cardId, card_quantity: amount, section: "main" });
+                remaining -= amount;
+              }
+            }
+          }
+          location.href = "deck.html?id=" + encodeURIComponent(saved.id);
+        } catch (error) {
+          alert(error.message || "Não foi possível salvar o deck na API.");
+          if (submitButton) submitButton.disabled = false;
+        }
+        return;
+      }
       if (editing) decks = decks.map(item => item.id === editing.id ? deck : item);
       else decks.push(deck);
       if (saveDecks()) location.href = "deck.html?id=" + encodeURIComponent(deck.id);
     });
   }
 
-  function renderDeckPage() {
+  async function renderDeckPage() {
     const list = $("#deck-card-list");
     if (!list) return;
     const params = new URLSearchParams(location.search);
     const id = params.get("id") || "blue-eyes";
-    const deck = decks.find(item => item.id === id) || decks[0];
+    let deck = decks.find(item => item.id === id) || decks[0];
+    if (apiMode || API?.session) {
+      if (!apiMode) {
+        try { await restoreApiData(); }
+        catch (_) { /* show the API error below if the authenticated data is unavailable */ }
+      }
+      try {
+        deck = await API.getDeck(id);
+        await loadDeckCards(deck);
+        decks = decks.map(item => item.id === deck.id ? deck : item);
+      } catch (error) {
+        const errorNode = $(".single-deck-page .empty-decks") || list;
+        if (errorNode) errorNode.textContent = error.message || "Não foi possível carregar este deck.";
+        return;
+      }
+    }
     if (!deck) return;
     const heading = $(".single-deck-heading h1");
     const total = $(".single-deck-heading > span");
@@ -382,26 +681,44 @@
     const back = $(".single-deck-page .back-link");
     if (back) back.href = "decks.html";
     const addButton = $("#add-card-button");
-    if (addButton) addButton.addEventListener("click", () => {
+    if (addButton) addButton.onclick = () => {
       location.href = "create-deck.html?edit=" + encodeURIComponent(deck.id);
-    });
+    };
+    const deleteButton = $("#delete-deck-button");
+    if (deleteButton) deleteButton.onclick = async () => {
+      deleteButton.disabled = true;
+      if (await deleteDeckById(deck.id)) location.href = "decks.html";
+      else deleteButton.disabled = false;
+    };
     list.innerHTML = (deck.cards || []).map(item => {
       const card = getCard(item.id);
       if (!card) return "";
       const quantity = Math.max(1, Number(item.quantity) || 1);
+      const copiesAcrossSections = (deck.cards || []).filter(entry => String(entry.id) === String(item.id)).reduce((sum, entry) => sum + (Number(entry.quantity) || 0), 0);
       return '<li><figure class="deck-card" data-card-id="' + card.id + '"><img src="' + escapeHtml(card.image) +
         '" alt="Carta ' + escapeHtml(card.name) + '" width="421" height="614"><figcaption>' + escapeHtml(card.name) +
         '</figcaption><div class="card-quantity" aria-label="Quantidade: ' + quantity + '"><button type="button" data-action="decrease" aria-label="Remover uma cópia">−</button>' +
-        '<output data-quantity>' + quantity + '</output><button type="button" data-action="increase" aria-label="Adicionar uma cópia">+</button></div></figure></li>';
+        '<output data-quantity>' + quantity + '</output><button type="button" data-action="increase" aria-label="Adicionar uma cópia"' + (copiesAcrossSections >= 3 ? ' disabled title="Limite de 3 cópias atingido"' : '') + '>+</button></div></figure></li>';
     }).join("") || '<li class="empty-decks">Este deck ainda não tem cartas.</li>';
 
-    list.addEventListener("click", event => {
+    list.onclick = async event => {
       const button = event.target.closest("[data-action]");
       if (!button) return;
       const item = button.closest("[data-card-id]");
       const cardId = item && item.getAttribute("data-card-id");
       const entry = deck.cards.find(card => String(card.id) === cardId);
       if (!entry) return;
+      const copiesAcrossSections = deck.cards.filter(card => String(card.id) === cardId).reduce((sum, card) => sum + (Number(card.quantity) || 0), 0);
+      if (button.dataset.action === "increase" && copiesAcrossSections >= 3) return;
+      if (apiMode) {
+        button.disabled = true;
+        try {
+          if (button.dataset.action === "increase") await API.addCard({ deck: deck.id, card: cardId, card_quantity: 1, section: entry.section || "main" });
+          else await API.removeCard({ deck: deck.id, card: cardId, card_quantity: 1, section: entry.section || "main" });
+          await renderDeckPage();
+        } catch (error) { alert(error.message || "Não foi possível atualizar a quantidade."); button.disabled = false; }
+        return;
+      }
       if (button.dataset.action === "increase") entry.quantity = Number(entry.quantity || 0) + 1;
       if (button.dataset.action === "decrease") {
         entry.quantity = Number(entry.quantity || 0) - 1;
@@ -410,7 +727,7 @@
       deck.updatedAt = Date.now();
       saveDecks();
       renderDeckPage();
-    }, { once: true });
+    };
     applyLanguage();
   }
 
@@ -453,10 +770,13 @@
 
   function init() {
     loadLanguage();
+    setupAccountAuth();
     renderHome();
     renderDeckList();
-    renderCreatePage();
-    renderDeckPage();
+    if (!API?.session) {
+      renderCreatePage();
+      renderDeckPage();
+    }
 
     const deckSearch = $("#deck-search");
     const deckSort = $("#deck-sort");
@@ -467,35 +787,51 @@
     if (searchForm) {
       const input = $("#card-query");
       const results = $("#search-results");
+      const filterButton = $(".card-search-filter", searchForm);
+      const filterPanel = $(".card-filter-panel", searchForm);
+      if (filterButton && filterPanel) filterButton.addEventListener("click", () => {
+        filterPanel.hidden = !filterPanel.hidden;
+        filterButton.setAttribute("aria-expanded", String(!filterPanel.hidden));
+      });
+      const params = new URLSearchParams(location.search);
+      if (filterPanel) filterPanel.querySelectorAll("[name]").forEach(field => { if (params.has(field.name)) field.value = params.get(field.name); });
       searchForm.addEventListener("submit", event => {
         event.preventDefault();
-        renderSearchResults(input ? input.value : "", results, false);
+        renderSearchResults(input ? input.value : "", results, false, searchForm);
       });
-      if (input) input.addEventListener("input", () => renderSearchResults(input.value, results, false));
-      const searchParams = new URLSearchParams(location.search);
-      if (input && searchParams.has("q")) input.value = searchParams.get("q") || "";
-      if (input && input.value) renderSearchResults(input.value, results, false);
+      if (input) input.addEventListener("input", () => renderSearchResults(input.value, results, false, searchForm));
+      if (input && params.has("q")) input.value = params.get("q") || "";
+      if (input && (input.value || Array.from(params.keys()).some(key => key !== "q"))) renderSearchResults(input.value, results, false, searchForm);
+      if (results) results.addEventListener("click", async event => {
+        const favoriteButton = event.target.closest("[data-favorite-card]");
+        if (!favoriteButton) return;
+        favoriteButton.disabled = true;
+        try {
+          await toggleFavorite(favoriteButton.getAttribute("data-favorite-card"));
+          favoriteButton.setAttribute("aria-pressed", String(favoriteIds.has(favoriteButton.getAttribute("data-favorite-card"))));
+          favoriteButton.textContent = favoriteIds.has(favoriteButton.getAttribute("data-favorite-card")) ? "♥" : "♡";
+        } catch (error) { alert(error.message || "Não foi possível atualizar os favoritos."); }
+        finally { favoriteButton.disabled = false; }
+      });
     }
+    document.querySelectorAll(".search-bar").forEach(form => {
+      const filterButton = $(".card-search-filter", form);
+      const filterPanel = $(".card-filter-panel", form);
+      if (filterButton && filterPanel) filterButton.addEventListener("click", () => {
+        filterPanel.hidden = !filterPanel.hidden;
+        filterButton.setAttribute("aria-expanded", String(!filterPanel.hidden));
+      });
+    });
     initSettings();
 
-    const stats = $(".account-stats");
-    if (stats) {
-      const deckCount = $('[data-profile-stat="decks"]', stats);
-      const cardCount = $('[data-profile-stat="cards"]', stats);
-      const mostUsedField = $('[data-profile-stat="most-used"]', stats);
-      const favoriteCount = $('[data-profile-stat="favorites"]', stats);
-      const totalCopies = decks.reduce((sum, deck) => sum + totalCards(deck), 0);
-      const usage = new Map();
-      decks.forEach(deck => (deck.cards || []).forEach(item => {
-        const id = String(item.id);
-        usage.set(id, (usage.get(id) || 0) + (Number(item.quantity) || 0));
-      }));
-      const mostUsedId = Array.from(usage.entries()).sort((a, b) => b[1] - a[1])[0]?.[0];
-      const mostUsedCard = mostUsedId ? getCard(mostUsedId) : null;
-      if (deckCount) deckCount.textContent = String(decks.length);
-      if (cardCount) cardCount.textContent = String(totalCopies);
-      if (mostUsedField) mostUsedField.textContent = mostUsedCard ? mostUsedCard.name : "—";
-      if (favoriteCount) favoriteCount.textContent = "0";
+    updateAccountStats();
+    if (API?.session) {
+      restoreApiData().then(loaded => {
+        if (loaded) {
+          renderHome(); renderDeckList(); renderCreatePage(); updateAccountStats();
+          if ($("#deck-card-list")) renderDeckPage();
+        }
+      });
     }
   }
 

@@ -6,7 +6,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from apps.decks.models import Deck, CardsOnDeck
 from apps.decks.serializers import DeckSerializer, CardQuantitySerializer
-from apps.users.models import FavoriteCards
 
 #Creates new deck
 class CreateDeck(APIView):

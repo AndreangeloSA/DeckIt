@@ -15,9 +15,11 @@
 .card-quantity { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 9px; }
 .card-quantity button { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid #d5bfa0; border-radius: 9px; background: #fcf5e9; color: #6b4932; font-size: 18px; line-height: 1; }
 .card-quantity output { min-width: 20px; color: var(--text); font-size: 14px; font-weight: 600; text-align: center; }
-.deck-actions { display: flex; justify-content: flex-end; margin: -10px 0 18px; }
+.deck-actions { display: flex; justify-content: flex-end; gap: 10px; margin: -10px 0 18px; }
 .add-card-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 8px 14px; border: 1px solid #a65336; border-radius: 12px; background: #a65336; color: #fff8ee; font: inherit; font-size: 14px; }
 .add-card-button .icon { width: 20px; height: 20px; }
+.delete-deck-button { min-height: 42px; padding: 8px 14px; border: 1px solid #c98770; border-radius: 12px; background: transparent; color: #9d402b; font: inherit; font-size: 14px; }
+.delete-deck-button:hover { background: #a65336; border-color: #a65336; color: #fff8ee; }
 .single-deck-title { flex: 1; min-width: 0; }
 .single-deck-description { margin: 8px 0 0; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
 .single-deck-description[hidden] { display: none; }

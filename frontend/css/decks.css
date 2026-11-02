@@ -15,7 +15,9 @@
 .deck-count { color: var(--muted); font-size: 13px; white-space: nowrap; }
 .decks-grid { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 .decks-grid > li { min-width: 0; }
-.collection-deck { display: flex; height: 100%; gap: 18px; padding: 16px; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); }
+.collection-deck { position: relative; display: flex; height: 100%; gap: 18px; padding: 16px; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); }
+.delete-deck-icon { position: absolute; top: 9px; right: 9px; z-index: 1; display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid #a65336; border-radius: 50%; background: #a65336; color: #fff8ee; font-size: 22px; font-weight: 500; line-height: 1; }
+.delete-deck-icon:hover { background: #873f2b; border-color: #873f2b; }
 .deck-cover { flex: 0 0 76px; align-self: center; }
 .deck-cover img { display: block; width: 100%; height: auto; border-radius: 4px; box-shadow: 0 3px 8px #3e30261a; }
 .collection-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
