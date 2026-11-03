@@ -72,6 +72,57 @@
     return parseResponse(response);
   }
 
+  const CACHE_PREFIX = "deckit.api.cache.v1:";
+  const CACHE_TTL = { cards: 24 * 60 * 60 * 1000, user: 5 * 60 * 1000 };
+
+  function cacheOwner() {
+    return session?.user?.username ? encodeURIComponent(session.user.username.toLocaleLowerCase()) : "anonymous";
+  }
+
+  function cacheKey(category, path, params = {}) {
+    const scope = category === "cards" ? "public" : cacheOwner();
+    const query = new URLSearchParams(Object.entries(params)
+      .filter(([, value]) => value !== undefined && value !== null && value !== "")
+      .sort(([a], [b]) => a.localeCompare(b))).toString();
+    return `${CACHE_PREFIX}${scope}:${category}:${path}:${query}`;
+  }
+
+  function readCache(key, ttl) {
+    try {
+      const cached = JSON.parse(localStorage.getItem(key) || "null");
+      if (cached && Date.now() - cached.savedAt < ttl) return { hit: true, value: cached.value };
+      if (cached) localStorage.removeItem(key);
+    } catch (_) { localStorage.removeItem(key); }
+    return { hit: false, value: null };
+  }
+
+  async function cachedGet(category, path, params, ttl, options = {}) {
+    const key = cacheKey(category, path, params);
+    const cached = readCache(key, ttl);
+    if (cached.hit) return cached.value;
+    const value = await request(path, { ...options, params });
+    try { localStorage.setItem(key, JSON.stringify({ savedAt: Date.now(), value })); } catch (_) { /* cache is optional when storage is full */ }
+    return value;
+  }
+
+  function clearUserCache(...categories) {
+    const ownerPrefix = `${CACHE_PREFIX}${cacheOwner()}:`;
+    const selectedPrefixes = categories.map(category => `${ownerPrefix}${category}:`);
+    for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+      const key = localStorage.key(index);
+      if (key && key.startsWith(ownerPrefix) && (!categories.length || selectedPrefixes.some(prefix => key.startsWith(prefix)))) {
+        localStorage.removeItem(key);
+      }
+    }
+  }
+
+  function clearAllUserCache(owner = cacheOwner()) {
+    const ownerPrefix = `${CACHE_PREFIX}${owner}:`;
+    for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+      const key = localStorage.key(index);
+      if (key && key.startsWith(ownerPrefix)) localStorage.removeItem(key);
+    }
+  }
   function normalizeCard(card) {
     return {
       ...card,
@@ -105,22 +156,23 @@
   }
 
   async function logout() {
+    const owner = cacheOwner();
     try {
       if (session?.refresh) await request("users/logout/", { method: "POST", body: { refresh: session.refresh } });
-    } finally { saveSession(null); }
+    } finally { clearAllUserCache(owner); saveSession(null); }
   }
 
   async function listDecks() {
-    const result = await request("decks/decklist/");
+    const result = await cachedGet("decks", "decks/decklist/", {}, CACHE_TTL.user);
     return (result.decks || []).map(normalizeDeck);
   }
 
-  async function getDeck(id) { return normalizeDeck(await request(`decks/decks/${encodeURIComponent(id)}/`)); }
-  async function createDeck(data) { return normalizeDeck(await request("decks/create/", { method: "POST", body: data })); }
-  async function editDeck(id, data) { return normalizeDeck(await request(`decks/edit/${encodeURIComponent(id)}/`, { method: "PATCH", body: data })); }
-  async function deleteDeck(id) { return request(`decks/delete/${encodeURIComponent(id)}/`, { method: "DELETE" }); }
+  async function getDeck(id) { return normalizeDeck(await cachedGet("decks", `decks/decks/${encodeURIComponent(id)}/`, {}, CACHE_TTL.user)); }
+  async function createDeck(data) { const deck = normalizeDeck(await request("decks/create/", { method: "POST", body: data })); clearUserCache("decks", "stats"); return deck; }
+  async function editDeck(id, data) { const deck = normalizeDeck(await request(`decks/edit/${encodeURIComponent(id)}/`, { method: "PATCH", body: data })); clearUserCache("decks", "stats"); return deck; }
+  async function deleteDeck(id) { const result = await request(`decks/delete/${encodeURIComponent(id)}/`, { method: "DELETE" }); clearUserCache("decks", "stats"); return result; }
   async function searchCards(name, filters = {}, page = 1) {
-    const result = await request("cards/search/", { params: { name, ...filters, page }, noRefresh: true });
+    const result = await cachedGet("cards", "cards/search/", { name, ...filters, page }, CACHE_TTL.cards, { noRefresh: true });
     if (Array.isArray(result)) return { results: result.map(normalizeCard), count: result.length, next: null, previous: null };
     const body = result?.results ? result : result?.search_results ? result.search_results : result?.data ? result.data : result?.pagination?.results ? result.pagination : result;
     const cards = Array.isArray(body) ? body : (body?.results || body?.cards || []);
@@ -138,18 +190,22 @@
     return result.results.length ? result.results[0] : null;
   }
   async function addCard({ deck, card, card_quantity = 1, section = "main" }) {
-    return normalizeManagedCard(await request("decks/manage_cards/", { method: "POST", body: { deck, card, card_quantity, section } }));
+    const result = normalizeManagedCard(await request("decks/manage_cards/", { method: "POST", body: { deck, card, card_quantity, section } }));
+    clearUserCache("decks", "stats");
+    return result;
   }
   async function removeCard({ deck, card, card_quantity = 1, section = "main" }) {
-    return normalizeManagedCard(await request("decks/manage_cards/", { method: "DELETE", body: { deck, card, card_quantity, section } }));
+    const result = normalizeManagedCard(await request("decks/manage_cards/", { method: "DELETE", body: { deck, card, card_quantity, section } }));
+    clearUserCache("decks", "stats");
+    return result;
   }
   function normalizeManagedCard(result) {
     return result ? { ...result, card: result.card === undefined ? undefined : String(result.card) } : result;
   }
-  async function getStats() { return request("decks/card_usage_stats/"); }
-  async function getFavorites() { return request("users/favorite/"); }
-  async function addFavorite(id) { return request(`users/favorite/${encodeURIComponent(id)}/`, { method: "POST" }); }
-  async function removeFavorite(id) { return request(`users/favorite/${encodeURIComponent(id)}/`, { method: "DELETE" }); }
+  async function getStats() { return cachedGet("stats", "decks/card_usage_stats/", {}, CACHE_TTL.user); }
+  async function getFavorites() { return cachedGet("favorites", "users/favorite/", {}, CACHE_TTL.user); }
+  async function addFavorite(id) { const result = await request(`users/favorite/${encodeURIComponent(id)}/`, { method: "POST" }); clearUserCache("favorites"); return result; }
+  async function removeFavorite(id) { const result = await request(`users/favorite/${encodeURIComponent(id)}/`, { method: "DELETE" }); clearUserCache("favorites"); return result; }
 
   window.DeckItAPI = {
     get session() { return session; },
