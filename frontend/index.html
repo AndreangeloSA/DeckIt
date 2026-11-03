@@ -23,18 +23,7 @@
           <h1 id="decks-title">Meus decks</h1>
           <a class="text-button" href="decks.html">Ver todos <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 4 8 8-8 8"/></svg></a>
         </div>
-        <div class="deck-list">
-          <a class="deck deck-link" href="deck.html?id=dark-magician" aria-label="Abrir deck Dark Magician">
-            <img src="assets/cards/46986414.jpg" alt="" width="421" height="614">
-            <span class="deck-info"><strong>Dark Magician</strong><span>40 cartas</span></span>
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 4 8 8-8 8"/></svg>
-          </a> <a class="deck deck-link" href="deck.html" aria-label="Abrir deck Blue-Eyes">
-            <img src="assets/cards/89631139.jpg" alt="" width="421" height="614">
-            <span class="deck-info"><strong>Blue-Eyes</strong><span>42 cartas</span></span>
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 4 8 8-8 8"/></svg>
-          </a>
-
-        </div>
+        <div class="deck-list" aria-live="polite"></div>
         <div class="create-area"><a class="create-button" href="create-deck.html"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M3 12h18"/></svg> Criar deck</a></div>
       </section>
       <section class="catalog" aria-labelledby="cards-title">
@@ -68,7 +57,7 @@
     </nav>
   </div>
   <script src="js/api.js?v=20261103-render-api" defer></script>
-  <script src="js/app.js?v=20261102-delete-decks" defer></script>
+  <script src="js/app.js?v=20261103-lazy-search-2s" defer></script>
 </body>
 </html>
 

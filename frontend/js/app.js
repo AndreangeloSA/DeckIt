@@ -168,30 +168,74 @@
   const API = window.DeckItAPI;
   let apiMode = Boolean(API && API.session);
   let favoriteIds = new Set();
+  let favoritesLoaded = false;
   let apiStats = null;
   let cardSearchSequence = 0;
   let builderSearchSequence = 0;
 
-  async function restoreApiData() {
+  async function restoreApiData({ deckList = false, coverLimit = 0, stats = false, favorites = false } = {}) {
     if (!API || !API.session) { apiMode = false; return false; }
-    try {
-      decks = await API.listDecks();
-      const ids = Array.from(new Set(decks.flatMap(deck => deck.cards.map(card => card.id))));
+    apiMode = true;
+    const [deckResult, statsResult, favoritesResult] = await Promise.allSettled([
+      deckList ? API.listDecks() : Promise.resolve(null),
+      stats ? API.getStats() : Promise.resolve(null),
+      favorites ? API.getFavorites() : Promise.resolve(null)
+    ]);
+    if (deckResult.status === "fulfilled" && deckResult.value) decks = deckResult.value;
+    else if (deckList) console.warn("Não foi possível carregar os decks.", deckResult.reason);
+    if (statsResult.status === "fulfilled" && statsResult.value) apiStats = statsResult.value;
+    if (favoritesResult.status === "fulfilled" && favoritesResult.value) {
+      favoriteIds = new Set((favoritesResult.value.cards || []).map(item => String(item.card)));
+      window.__deckitFavoriteCount = favoritesResult.value.favorite_card_count || 0;
+      favoritesLoaded = true;
+    }
+    if (coverLimit && deckList && deckResult.status === "fulfilled") {
+      const visibleDecks = coverLimit === true ? decks : decks.slice(0, coverLimit);
+      const ids = Array.from(new Set(visibleDecks.flatMap(deck => (deck.cards || []).slice(0, 1).map(card => String(card.id)))));
       const loadedCards = (await Promise.all(ids.map(id => API.cardById(id).catch(() => null)))).filter(Boolean);
       cards = [...loadedCards, ...cards.filter(card => !loadedCards.some(remote => remote.id === card.id))];
-      apiMode = true;
-      const [statsResult, favoritesResult] = await Promise.allSettled([API.getStats(), API.getFavorites()]);
-      if (statsResult.status === "fulfilled") apiStats = statsResult.value;
-      if (favoritesResult.status === "fulfilled") {
-        favoriteIds = new Set((favoritesResult.value.cards || []).map(item => String(item.card)));
-        window.__deckitFavoriteCount = favoritesResult.value.favorite_card_count || 0;
-      }
-      return true;
-    } catch (error) {
-      apiMode = false;
-      console.warn("Não foi possível carregar os dados da API.", error);
-      return false;
     }
+    return !deckList || deckResult.status === "fulfilled";
+  }
+
+  async function loadApiFavorites() {
+    if (!API?.session || favoritesLoaded) return;
+    const result = await API.getFavorites();
+    favoriteIds = new Set((result.cards || []).map(item => String(item.card)));
+    window.__deckitFavoriteCount = result.favorite_card_count || 0;
+    favoritesLoaded = true;
+  }
+
+  async function loadPageApiData() {
+    if (!API?.session) return false;
+    if ($(".card-search-form")) return true;
+    if ($("#deck-card-list")) { await renderDeckPage(); return true; }
+    if ($("#create-deck-form")) {
+      const editId = new URLSearchParams(location.search).get("edit");
+      if (editId) {
+        try {
+          const deck = await API.getDeck(editId);
+          await loadDeckCards(deck);
+          decks = [...decks.filter(item => String(item.id) !== String(deck.id)), deck];
+        } catch (error) {
+          const hint = $(".builder-heading span");
+          if (hint) { hint.textContent = error.message || "Não foi possível carregar este deck."; hint.hidden = false; }
+        }
+      }
+      renderCreatePage();
+      return true;
+    }
+    const profile = Boolean($(".account-stats"));
+    const deckListPage = document.body.classList.contains("decks-document");
+    const homePage = Boolean($(".deck-list"));
+    const loaded = await restoreApiData({
+      deckList: profile || deckListPage || homePage,
+      coverLimit: deckListPage ? true : homePage ? 2 : 0,
+      stats: profile,
+      favorites: profile
+    });
+    if (loaded) { renderHome(); renderDeckList(); updateAccountStats(); }
+    return loaded;
   }
 
   function updateAccountStats() {
@@ -282,6 +326,7 @@
         favoriteIds.add(id);
       }
       const result = await API.getFavorites();
+      favoritesLoaded = true;
       window.__deckitFavoriteCount = result.favorite_card_count || 0;
       favoriteIds = new Set((result.cards || []).map(item => String(item.card)));
     } catch (error) {
@@ -350,7 +395,7 @@
       try {
         if (registerMode) await API.register({ username, email, password });
         else await API.login(username, password);
-        const loaded = await restoreApiData();
+        const loaded = await loadPageApiData();
         if (!loaded) throw new Error("A conta foi autenticada, mas não foi possível carregar seus dados.");
         showState(true);
         renderHome(); renderDeckList(); updateAccountStats();
@@ -468,7 +513,13 @@
     const filters = {};
     if (filterForm) new FormData(filterForm).forEach((value, key) => { if (key !== "q" && String(value).trim()) filters[key] = String(value).trim(); });
     if (normalized || Object.keys(filters).length) {
-      try { payload = await queryCards(normalized, filters, page); }
+      try {
+        const [searchPayload] = await Promise.all([
+          queryCards(normalized, filters, page),
+          loadApiFavorites().catch(() => {})
+        ]);
+        payload = searchPayload;
+      }
       catch (error) { failure = error.message || "Não foi possível pesquisar cartas na API."; }
     }
     if (requestId !== cardSearchSequence) return;
@@ -568,10 +619,19 @@
       applyLanguage();
     }
 
+    let builderSearchTimer;
     searchCards();
     renderChosen();
-    if (search) search.addEventListener("input", searchCards);
-    if (addSearchButton) addSearchButton.addEventListener("click", searchCards);
+    if (search) search.addEventListener("input", () => {
+      clearTimeout(builderSearchTimer);
+      builderSearchSequence += 1;
+      if (!search.value.trim()) { searchCards(); return; }
+      builderSearchTimer = setTimeout(searchCards, 2000);
+    });
+    if (addSearchButton) addSearchButton.addEventListener("click", () => {
+      clearTimeout(builderSearchTimer);
+      searchCards();
+    });
 
     form.addEventListener("click", event => {
       const add = event.target.closest("[data-add-card]");
@@ -652,13 +712,13 @@
     const list = $("#deck-card-list");
     if (!list) return;
     const params = new URLSearchParams(location.search);
-    const id = params.get("id") || "blue-eyes";
-    let deck = decks.find(item => item.id === id) || decks[0];
+    const id = params.get("id");
+    if (!id) {
+      list.innerHTML = '<li class="empty-decks">Nenhum deck selecionado.</li>';
+      return;
+    }
+    let deck = decks.find(item => String(item.id) === id) || null;
     if (apiMode || API?.session) {
-      if (!apiMode) {
-        try { await restoreApiData(); }
-        catch (_) { /* show the API error below if the authenticated data is unavailable */ }
-      }
       try {
         deck = await API.getDeck(id);
         await loadDeckCards(deck);
@@ -795,11 +855,18 @@
       });
       const params = new URLSearchParams(location.search);
       if (filterPanel) filterPanel.querySelectorAll("[name]").forEach(field => { if (params.has(field.name)) field.value = params.get(field.name); });
+      let searchTimer;
       searchForm.addEventListener("submit", event => {
         event.preventDefault();
+        clearTimeout(searchTimer);
         renderSearchResults(input ? input.value : "", results, false, searchForm);
       });
-      if (input) input.addEventListener("input", () => renderSearchResults(input.value, results, false, searchForm));
+      if (input) input.addEventListener("input", () => {
+        clearTimeout(searchTimer);
+        cardSearchSequence += 1;
+        if (!input.value.trim()) { renderSearchResults("", results, false, searchForm); return; }
+        searchTimer = setTimeout(() => renderSearchResults(input.value, results, false, searchForm), 2000);
+      });
       if (input && params.has("q")) input.value = params.get("q") || "";
       if (input && (input.value || Array.from(params.keys()).some(key => key !== "q"))) renderSearchResults(input.value, results, false, searchForm);
       if (results) results.addEventListener("click", async event => {
@@ -825,14 +892,7 @@
     initSettings();
 
     updateAccountStats();
-    if (API?.session) {
-      restoreApiData().then(loaded => {
-        if (loaded) {
-          renderHome(); renderDeckList(); renderCreatePage(); updateAccountStats();
-          if ($("#deck-card-list")) renderDeckPage();
-        }
-      });
-    }
+    if (API?.session) loadPageApiData();
   }
 
   document.addEventListener("DOMContentLoaded", init);
