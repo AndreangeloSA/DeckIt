@@ -163,3 +163,9 @@ STORAGES = {
 
 # Render
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+#CORS
+
+CORS_ALLOWED_ORIGINS = [
+    "https://deckit.pages.dev",
+]

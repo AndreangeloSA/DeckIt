@@ -1,9 +1,12 @@
 """Small development-only CORS middleware for the local static frontend."""
+from django.utils.cache import patch_vary_headers
+
 
 class LocalFrontendCorsMiddleware:
     allowed_origins = {
         "http://localhost:5500",
         "http://127.0.0.1:5500",
+        "https://deckit.pages.dev"
     }
     allowed_methods = "GET, POST, PATCH, DELETE, OPTIONS"
     allowed_headers = "Accept, Authorization, Content-Type"
@@ -24,5 +27,5 @@ class LocalFrontendCorsMiddleware:
             response["Access-Control-Allow-Origin"] = origin
             response["Access-Control-Allow-Methods"] = self.allowed_methods
             response["Access-Control-Allow-Headers"] = self.allowed_headers
-            response["Vary"] = "Origin"
+            patch_vary_headers(response, ("Origin",))
         return response
