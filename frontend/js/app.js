@@ -42,7 +42,7 @@
       "Pesquisar cartas pelo nome": "Search cards by name", "Pesquisar decks": "Search decks",
       "Criar deck": "Create deck", "Editar deck": "Edit deck", "Editar informações do deck": "Edit deck details", "Informações do deck": "Deck details", "Salvar deck": "Save deck",
       "Salvar alterações": "Save changes", "Cancelar": "Cancel", "Cartas adicionadas ao deck": "Cards added to the deck",
-      "Cartas de exemplo": "Sample cards", "Adicionar carta": "Add card", "Adicionar cartas ao deck": "Add cards to the deck",
+      "Cartas de exemplo": "Sample cards", "Adicionar carta": "Add card", "Adicionar cartas ao deck": "Add cards to the deck", "Adicionar ou editar cartas": "Add or edit cards",
       "Clique em uma carta exemplo para ver seus detalhes.": "Click a sample card to view its details.",
       "Adicionar ao deck": "Add to deck", "Quantidade": "Quantity", "Remover": "Remove",
       "As cartas adicionadas aparecerão aqui.": "Cards you add will appear here.", "Pesquise para ver cartas": "Search to see cards",
@@ -52,6 +52,7 @@
       "Desenvolvido por": "Developed by",
       "Excluir deck": "Delete deck", "Tem certeza de que deseja excluir este deck?": "Are you sure you want to delete this deck?",
       "Faça login para garantir persistência dos decks através de dispositivos e navegadores.": "Sign in to keep your decks synced across devices and browsers.",
+      "Seus decks ficam salvos neste navegador.": "Your decks are saved in this browser.",
       "Este deck ainda não tem cartas.": "This deck does not have any cards yet.", "Não foi possível salvar os decks neste navegador.": "Could not save decks in this browser.",
       "Adicione pelo menos uma carta ao deck.": "Add at least one card to the deck.", "Todos os decks": "All decks", "DeckIt é um projeto independente, não oficial e não afiliado à Konami ou aos titulares de Yu-Gi-Oh!.": "DeckIt is an independent, unofficial project and is not affiliated with Konami or the Yu-Gi-Oh! rights holders."
     },
@@ -85,7 +86,7 @@
       "Editar deck": "Editar mazo", "Editar informações do deck": "Editar información del mazo", "Informações do deck": "Información del mazo", "Salvar deck": "Guardar mazo", "Salvar alterações": "Guardar cambios", "Cancelar": "Cancelar",
       "Cartas adicionadas ao deck": "Cartas añadidas al mazo", "Cartas de exemplo": "Cartas de ejemplo", "Adicionar carta": "Añadir carta",
       "Clique em uma carta exemplo para ver seus detalhes.": "Haz clic en una carta de ejemplo para ver sus detalles.",
-      "Adicionar cartas ao deck": "Añadir cartas al mazo", "Adicionar ao deck": "Añadir al mazo", "Quantidade": "Cantidad", "Remover": "Quitar",
+      "Adicionar cartas ao deck": "Añadir cartas al mazo", "Adicionar ou editar cartas": "Añadir o editar cartas", "Adicionar ao deck": "Añadir al mazo", "Quantidade": "Cantidad", "Remover": "Quitar",
       "As cartas adicionadas aparecerão aqui.": "Las cartas añadidas aparecerán aquí.", "Pesquise para ver cartas": "Busca para ver cartas",
       "carta encontrada": "carta encontrada", "cartas encontradas": "cartas encontradas", "Abrir deck": "Abrir mazo",
       "Você ainda não criou decks.": "Todavía no has creado mazos.", "Nenhum deck encontrado.": "No se encontraron mazos.",
@@ -93,6 +94,7 @@
       "Desenvolvido por": "Desarrollado por",
       "Excluir deck": "Eliminar mazo", "Tem certeza de que deseja excluir este deck?": "¿Seguro que quieres eliminar este mazo?",
       "Faça login para garantir persistência dos decks através de dispositivos e navegadores.": "Inicia sesión para mantener tus mazos sincronizados entre dispositivos y navegadores.",
+      "Seus decks ficam salvos neste navegador.": "Tus mazos se guardan en este navegador.",
       "Este deck ainda não tem cartas.": "Este mazo todavía no tiene cartas.", "Não foi possível salvar os decks neste navegador.": "No se pudieron guardar los mazos en este navegador.",
       "Adicione pelo menos uma carta ao deck.": "Añade al menos una carta al mazo.", "DeckIt é um projeto independente, não oficial e não afiliado à Konami ou aos titulares de Yu-Gi-Oh!.": "DeckIt es un proyecto independiente y no oficial, sin afiliación con Konami ni con los titulares de Yu-Gi-Oh!."
     }
@@ -273,10 +275,12 @@
   async function loadDeckCards(deck) {
     const entries = deck.cards || [];
     const loaded = await Promise.all(entries.map(async entry => {
-      if (getCard(entry.id)?.desc !== undefined) return null;
+      const current = getCard(entry.id);
+      if (current?.desc !== undefined && (current.small_image_url || current.thumbnail)) return null;
       return API.cardById(entry.id).catch(() => null);
     }));
-    cards = [...loaded.filter(Boolean), ...cards];
+    const refreshed = loaded.filter(Boolean);
+    cards = [...refreshed, ...cards.filter(card => !refreshed.some(item => item.id === card.id))];
   }
 
   async function syncDeckCardChanges(deckId, before, after) {
@@ -616,6 +620,8 @@
       if (heading) heading.textContent = "Editar deck";
       const saveButton = $("#save-deck-button");
       if (saveButton) saveButton.textContent = "Salvar alterações";
+      const cardChoiceTitle = $("#card-choice-title");
+      if (cardChoiceTitle) cardChoiceTitle.textContent = "Adicionar ou editar cartas";
     }
 
     const selected = new Map();
@@ -805,6 +811,7 @@
       }
     }
     if (!deck) return;
+    if (API && !apiMode) await loadDeckCards(deck);
     const heading = $(".single-deck-heading h1");
     const total = $(".single-deck-heading > span");
     if (heading) heading.textContent = deck.name;
@@ -831,7 +838,8 @@
       const quantity = Math.max(1, Number(item.quantity) || 1);
       const copiesAcrossSections = (deck.cards || []).filter(entry => String(entry.id) === String(item.id)).reduce((sum, entry) => sum + (Number(entry.quantity) || 0), 0);
       const thumbnail = card.small_image_url || card.thumbnail;
-      const art = thumbnail ? '<img src="' + escapeHtml(thumbnail) + '" alt="" width="421" height="614" loading="lazy">' : '<span class="card-thumbnail-placeholder" aria-hidden="true">◇</span>';
+      const fallback = thumbnail ? ' onerror="this.onerror=null;this.src=\'' + escapeHtml(card.image) + '\'"' : '';
+      const art = thumbnail ? '<img src="' + escapeHtml(thumbnail) + '"' + fallback + ' alt="' + escapeHtml(card.name) + '" width="421" height="614" loading="lazy" decoding="async">' : '<span class="card-thumbnail-placeholder" aria-hidden="true">◇</span>';
       return '<li><figure class="deck-card" data-card-id="' + card.id + '"><button class="card-preview-button" type="button" data-preview-card="' + card.id + '" aria-haspopup="dialog">' + art + '<span>' + escapeHtml(card.name) +
         '</span></button><div class="card-quantity" aria-label="Quantidade: ' + quantity + '"><button type="button" data-action="decrease" aria-label="Remover uma cópia">−</button>' +
         '<output data-quantity>' + quantity + '</output><button type="button" data-action="increase" aria-label="Adicionar uma cópia"' + (copiesAcrossSections >= 3 ? ' disabled title="Limite de 3 cópias atingido"' : '') + '>+</button></div></figure></li>';
