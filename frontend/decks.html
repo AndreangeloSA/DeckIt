@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f2e5cf">
   <meta name="deckit-api-base" content="https://deckit-api.onrender.com/api/">
   <link rel="icon" type="image/png" sizes="48x48" href="assets/logo/favicon.png">
-  <title>DeckIt — Todos os seus decks</title>
+  <title>DeckIt — Minha coleção</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/decks.css">
   <link rel="stylesheet" href="css/i18n-layout.css">
@@ -21,7 +21,7 @@
     <main id="conteudo" class="main decks-page">
       <a class="back-link" href="index.html"><span aria-hidden="true">←</span> Início</a>
       <div class="decks-heading">
-        <h1>Todos os seus decks</h1>
+        <h1>Minha coleção</h1>
         <a class="create-button" href="create-deck.html">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M12 3v18M3 12h18"/></svg>
           Criar deck</a>
@@ -37,11 +37,8 @@
           <select id="deck-sort"><option value="name">Nome (A–Z)</option><option value="updated">Mais recentes</option></select>
         </div>
       </div>
-      <section class="deck-collection" aria-labelledby="collection-title">
-        <div class="collection-heading">
-          <h2 id="collection-title">Minha coleção</h2>
-          <span class="deck-count">0 decks</span>
-        </div>
+      <section class="deck-collection" aria-label="Minha coleção">
+        <div class="collection-heading"><span class="deck-count">0 decks</span></div>
         <ul id="user-decks" class="decks-grid" aria-label="Meus decks"></ul>
 </section>
 
@@ -59,6 +56,6 @@
     </nav>
   </div>
   <script src="js/api.js?v=20261103-persistent-cache" defer></script>
-  <script src="js/app.js?v=20261103-lazy-search-2s" defer></script>
+  <script src="js/app.js?v=20261103-collection-edit-labels" defer></script>
 </body>
 </html>

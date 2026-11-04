@@ -127,6 +127,7 @@
     return {
       ...card,
       id: String(card.id),
+      thumbnail: card.small_image_url || null,
       image: card.image_url || card.image || `https://pub-6aee9263b7e24444b8ca3bc7c18b8d2c.r2.dev/${card.id}.jpg`,
       def: card.defense ?? card.def ?? null
     };

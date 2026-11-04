@@ -32,3 +32,32 @@
 .card-search-form > .card-search-filter { background: transparent; color: var(--icon); }
 
 .card-search-form > button.card-search-filter:hover { width: 44px; min-width: 44px; height: 44px; min-height: 44px; border-radius: 9px; background: color-mix(in srgb, var(--border) 35%, transparent) !important; transition: background-color 160ms ease; }
+
+/* Card preview: native modal keeps keyboard focus within the foreground. */
+.search-card .card-preview-button { display: block; width: 100%; padding: 0; border: 0; background: transparent; color: var(--text); font: inherit; cursor: pointer; }
+.card-preview-button span { display: block; margin-top: 8px; font-size: clamp(11px, 2.7vw, 15px); line-height: 1.35; overflow-wrap: anywhere; }
+.card-preview-button:focus-visible, .card-preview-close:focus-visible { outline: 3px solid var(--accent, #a65336); outline-offset: 4px; }
+body.card-preview-open { overflow: hidden; }
+.card-preview-dialog { box-sizing: border-box; width: min(960px, calc(100% - 24px)); max-width: none; max-height: calc(100dvh - 24px); margin: auto; padding: 48px 16px 20px; overflow: auto; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); color: var(--text); box-shadow: 0 24px 80px #0008; }
+.card-preview-dialog::backdrop { background: rgb(20 15 12 / 78%); }
+.card-preview-close { position: absolute; top: 4px; right: 8px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--surface); color: var(--text); font-size: 30px; cursor: pointer; }
+.card-preview-layout { display: grid; gap: 20px; min-width: 0; }
+.card-preview-art img { display: block; width: min(100%, 360px); height: auto; margin: auto; border-radius: 9px; }
+.card-preview-art img[hidden] { display: none; }
+.card-preview-details { min-width: 0; padding: 18px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); overflow-wrap: anywhere; }
+.card-preview-details h2 { margin: 0 0 18px; font-size: 23px; }
+.card-preview-details dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 0; }
+.card-preview-details dt { color: var(--muted); font-size: 12px; }
+.card-preview-details dd { margin: 4px 0 0; font-weight: 600; }
+.card-preview-description { white-space: pre-wrap; line-height: 1.6; }
+@media (min-width: 700px) {
+  .card-preview-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; gap: 0; }
+  .card-preview-art { position: relative; z-index: 1; }
+  .card-preview-art img { width: 100%; max-width: 421px; }
+  .card-preview-details { margin: 16px 0; border-radius: 0 12px 12px 0; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .card-preview-dialog[open] .card-preview-details { animation: card-details-reveal 240ms ease-out; }
+  @keyframes card-details-reveal { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: translateX(0); } }
+}
+.search-card .card-thumbnail-placeholder, .builder-card .card-thumbnail-placeholder { display: grid; place-items: center; width: 100%; aspect-ratio: 421 / 614; margin: 0; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); color: var(--muted); font-size: 48px; }

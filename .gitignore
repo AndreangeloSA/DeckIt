@@ -62,4 +62,5 @@ dist/
 # Django local files
 # =========================
 images/
+small-images/
 staticfiles/

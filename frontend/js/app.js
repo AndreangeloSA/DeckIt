@@ -13,7 +13,7 @@
   const LANGUAGE_KEY = "deckit.local.language";
   const translations = {
     en: {
-      "DeckIt — Início": "DeckIt — Home", "DeckIt — Todos os seus decks": "DeckIt — All your decks",
+      "DeckIt — Início": "DeckIt — Home", "DeckIt — Minha coleção": "DeckIt — My collection",
       "DeckIt — Criar deck": "DeckIt — Create deck", "DeckIt — Blue-Eyes": "DeckIt — Blue-Eyes",
       "DeckIt — Dark Magician": "DeckIt — Dark Magician", "DeckIt — Pesquisar cartas": "DeckIt — Search cards",
       "DeckIt — Minha conta": "DeckIt — My account", "DeckIt — Configurações": "DeckIt — Settings",
@@ -55,7 +55,7 @@
       "Adicione pelo menos uma carta ao deck.": "Add at least one card to the deck.", "Todos os decks": "All decks", "DeckIt é um projeto independente, não oficial e não afiliado à Konami ou aos titulares de Yu-Gi-Oh!.": "DeckIt is an independent, unofficial project and is not affiliated with Konami or the Yu-Gi-Oh! rights holders."
     },
     es: {
-      "DeckIt — Início": "DeckIt — Inicio", "DeckIt — Todos os seus decks": "DeckIt — Todos tus mazos",
+      "DeckIt — Início": "DeckIt — Inicio", "DeckIt — Minha coleção": "DeckIt — Mi colección",
       "DeckIt — Criar deck": "DeckIt — Crear mazo", "DeckIt — Blue-Eyes": "DeckIt — Blue-Eyes",
       "DeckIt — Dark Magician": "DeckIt — Dark Magician", "DeckIt — Pesquisar cartas": "DeckIt — Buscar cartas",
       "DeckIt — Minha conta": "DeckIt — Mi cuenta", "DeckIt — Configurações": "DeckIt — Ajustes",
@@ -456,6 +456,44 @@
     }
   }
 
+  function openCardPreview(id) {
+    const card = getCard(id);
+    if (!card) return;
+    let dialog = document.querySelector('.card-preview-dialog');
+    if (!dialog) {
+      dialog = document.createElement('dialog');
+      dialog.className = 'card-preview-dialog';
+      dialog.setAttribute('aria-labelledby', 'card-preview-title');
+      document.body.append(dialog);
+      dialog.addEventListener('keydown', event => {
+        if (event.key === 'Tab') {
+          event.preventDefault();
+          dialog.querySelector('[data-close-preview]').focus();
+        }
+      });
+      dialog.addEventListener('click', event => {
+        if (event.target.closest('[data-close-preview]')) dialog.close();
+        if (event.target === dialog) {
+          const bounds = dialog.getBoundingClientRect();
+          if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close();
+        }
+      });
+      dialog.addEventListener('close', () => {
+        document.body.classList.remove('card-preview-open');
+        dialog.replaceChildren();
+      });
+    }
+    const fields = [['ID', card.id], ['Tipo', card.type], ['Atributo', card.attribute], ['Raça', card.race], ['Nível', card.level], ['ATK', card.atk], ['DEF', card.defense ?? card.def], ['Moldura', card.frameType]];
+    dialog.innerHTML = '<button type="button" class="card-preview-close" data-close-preview autofocus aria-label="' + (currentLanguage === 'en' ? 'Close' : 'Fechar') + '">×</button>' +
+      '<div class="card-preview-layout"><div class="card-preview-art"><img alt="' + escapeHtml(card.name) + '" width="421" height="614"><p hidden role="status">' + (currentLanguage === 'en' ? 'Image unavailable.' : 'Imagem indisponível.') + '</p></div>' +
+      '<section class="card-preview-details"><h2 id="card-preview-title">' + escapeHtml(card.name) + '</h2><dl>' + fields.filter(([, value]) => value !== null && value !== undefined && value !== '').map(([label, value]) => '<div><dt>' + escapeHtml(translateValue(label)) + '</dt><dd>' + escapeHtml(String(value)) + '</dd></div>').join('') + '</dl><p class="card-preview-description">' + escapeHtml(card.desc || card.description || (currentLanguage === 'en' ? 'No description available.' : 'Descrição indisponível.')) + '</p></section></div>';
+    const image = dialog.querySelector('img');
+    image.onerror = () => { image.hidden = true; dialog.querySelector('[role="status"]').hidden = false; };
+    image.src = card.image_url || card.image;
+    document.body.classList.add('card-preview-open');
+    dialog.showModal();
+  }
+
   function cardImage(id) {
     const card = getCard(id);
     return card ? card.image : "assets/cards/" + encodeURIComponent(id) + ".jpg";
@@ -530,7 +568,10 @@
         const action = includeAddButton
           ? '<div class="card-add-controls"><label>Qtd.<select data-add-quantity><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label><button type="button" data-add-card="' + card.id + '">Adicionar ao deck</button></div>'
           : '<button class="favorite-card-button" type="button" data-favorite-card="' + card.id + '" aria-pressed="' + favoriteIds.has(card.id) + '">' + (favoriteIds.has(card.id) ? '♥' : '♡') + '</button>';
-        return '<li><figure class="' + (includeAddButton ? 'builder-card' : 'search-card') + '" data-card-id="' + card.id + '"><img src="' + escapeHtml(card.image) + '" alt="' + escapeHtml(card.name) + '" width="421" height="614">' + (includeAddButton ? '<h3>' : '<figcaption>') + escapeHtml(card.name) + (includeAddButton ? '</h3>' : '</figcaption>') + action + '</figure></li>';
+        const thumbnail = card.small_image_url || card.thumbnail;
+        const image = thumbnail ? '<img src="' + escapeHtml(thumbnail) + '" alt="" width="421" height="614" loading="lazy" decoding="async">' : '<span class="card-thumbnail-placeholder" aria-hidden="true">◇</span>';
+        const preview = includeAddButton ? image : '<button class="card-preview-button" type="button" data-preview-card="' + escapeHtml(card.id) + '" aria-haspopup="dialog" aria-label="' + escapeHtml(card.name) + '">' + image + '<span>' + escapeHtml(card.name) + '</span></button>';
+        return '<li><figure class="' + (includeAddButton ? 'builder-card' : 'search-card') + '" data-card-id="' + escapeHtml(card.id) + '">' + preview + (includeAddButton ? '<h3>' + escapeHtml(card.name) + '</h3>' : '') + action + '</figure></li>';
       }).join("");
     target.innerHTML = append ? target.innerHTML + markup : markup;
     const section = target.closest(".search-results");
@@ -594,30 +635,56 @@
       applyLanguage();
     }
 
-    async function searchCards() {
+    const loadMoreButton = document.createElement("button");
+    loadMoreButton.type = "button";
+    loadMoreButton.className = "search-load-more";
+    loadMoreButton.textContent = "Carregar mais";
+    loadMoreButton.hidden = true;
+    if (results) results.insertAdjacentElement("afterend", loadMoreButton);
+
+    async function searchCards(page = 1, append = false) {
       if (!results) return;
       const query = (search && search.value || "").trim();
       const requestId = ++builderSearchSequence;
-      let found = [];
+      let payload = { results: [], count: 0, next: null };
       let failure = "";
       if (query) {
-        try { found = (await queryCards(query)).results; }
+        try { payload = await queryCards(query, {}, page); }
         catch (error) { failure = error.message || "Não foi possível pesquisar cartas na API."; }
       }
       if (requestId !== builderSearchSequence) return;
-      results.innerHTML = failure ? '<li class="search-error">' + escapeHtml(failure) + '</li>' : found.map(card => '<li><article class="builder-card" data-card-id="' + card.id +
+      const found = payload.results || [];
+      const existingIds = append
+        ? new Set(Array.from(results.querySelectorAll("[data-card-id]")).map(card => card.getAttribute("data-card-id")))
+        : new Set();
+      const markup = found.filter(card => !existingIds.has(String(card.id))).map(card => '<li><article class="builder-card" data-card-id="' + card.id +
         '"><img src="' + escapeHtml(card.image) + '" alt="' + escapeHtml(card.name) + '" width="421" height="614"><h3>' +
         escapeHtml(card.name) + '</h3><div class="card-add-controls"><label>Qtd.<select data-add-quantity>' +
         '<option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>' +
         '<button type="button" data-add-card="' + card.id + '">Adicionar ao deck</button></div></article></li>').join("");
+      if (failure) {
+        if (append) results.insertAdjacentHTML("beforeend", '<li class="search-error">' + escapeHtml(failure) + '</li>');
+        else results.innerHTML = '<li class="search-error">' + escapeHtml(failure) + '</li>';
+      } else if (append) results.insertAdjacentHTML("beforeend", markup);
+      else results.innerHTML = markup;
       results.hidden = !query;
       const hint = $(".builder-heading span");
+      const count = payload.count ?? found.length;
       if (hint) {
-        hint.textContent = failure || (query ? found.length + (found.length === 1 ? " carta encontrada" : " cartas encontradas") : "");
+        hint.textContent = failure || (query ? count + (count === 1 ? " carta encontrada" : " cartas encontradas") : "");
         hint.hidden = !query;
       }
+      loadMoreButton.hidden = !query || !payload.next || Boolean(failure);
+      loadMoreButton.disabled = false;
+      loadMoreButton.dataset.nextPage = String(page + 1);
       applyLanguage();
     }
+
+    loadMoreButton.addEventListener("click", async () => {
+      const nextPage = Number(loadMoreButton.dataset.nextPage || 2);
+      loadMoreButton.disabled = true;
+      await searchCards(nextPage, true);
+    });
 
     let builderSearchTimer;
     searchCards();
@@ -740,7 +807,7 @@
     if (descriptionBox) descriptionBox.hidden = !String(deck.description || "").trim();
     const back = $(".single-deck-page .back-link");
     if (back) back.href = "decks.html";
-    const addButton = $("#add-card-button");
+    const addButton = $("#edit-deck-button");
     if (addButton) addButton.onclick = () => {
       location.href = "create-deck.html?edit=" + encodeURIComponent(deck.id);
     };
@@ -870,6 +937,8 @@
       if (input && params.has("q")) input.value = params.get("q") || "";
       if (input && (input.value || Array.from(params.keys()).some(key => key !== "q"))) renderSearchResults(input.value, results, false, searchForm);
       if (results) results.addEventListener("click", async event => {
+        const previewButton = event.target.closest("[data-preview-card]");
+        if (previewButton) { openCardPreview(previewButton.dataset.previewCard); return; }
         const favoriteButton = event.target.closest("[data-favorite-card]");
         if (!favoriteButton) return;
         favoriteButton.disabled = true;
