@@ -43,6 +43,7 @@
       "Criar deck": "Create deck", "Editar deck": "Edit deck", "Editar informações do deck": "Edit deck details", "Informações do deck": "Deck details", "Salvar deck": "Save deck",
       "Salvar alterações": "Save changes", "Cancelar": "Cancel", "Cartas adicionadas ao deck": "Cards added to the deck",
       "Cartas de exemplo": "Sample cards", "Adicionar carta": "Add card", "Adicionar cartas ao deck": "Add cards to the deck",
+      "Clique em uma carta exemplo para ver seus detalhes.": "Click a sample card to view its details.",
       "Adicionar ao deck": "Add to deck", "Quantidade": "Quantity", "Remover": "Remove",
       "As cartas adicionadas aparecerão aqui.": "Cards you add will appear here.", "Pesquise para ver cartas": "Search to see cards",
       "carta encontrada": "card found", "cartas encontradas": "cards found", "Abrir deck": "Open deck",
@@ -83,6 +84,7 @@
       "Navegação principal": "Navegación principal", "Pesquisar cartas pelo nome": "Buscar cartas por nombre", "Pesquisar decks": "Buscar mazos",
       "Editar deck": "Editar mazo", "Editar informações do deck": "Editar información del mazo", "Informações do deck": "Información del mazo", "Salvar deck": "Guardar mazo", "Salvar alterações": "Guardar cambios", "Cancelar": "Cancelar",
       "Cartas adicionadas ao deck": "Cartas añadidas al mazo", "Cartas de exemplo": "Cartas de ejemplo", "Adicionar carta": "Añadir carta",
+      "Clique em uma carta exemplo para ver seus detalhes.": "Haz clic en una carta de ejemplo para ver sus detalles.",
       "Adicionar cartas ao deck": "Añadir cartas al mazo", "Adicionar ao deck": "Añadir al mazo", "Quantidade": "Cantidad", "Remover": "Quitar",
       "As cartas adicionadas aparecerão aqui.": "Las cartas añadidas aparecerán aquí.", "Pesquise para ver cartas": "Busca para ver cartas",
       "carta encontrada": "carta encontrada", "cartas encontradas": "cartas encontradas", "Abrir deck": "Abrir mazo",
@@ -271,7 +273,7 @@
   async function loadDeckCards(deck) {
     const entries = deck.cards || [];
     const loaded = await Promise.all(entries.map(async entry => {
-      if (getCard(entry.id)) return null;
+      if (getCard(entry.id)?.desc !== undefined) return null;
       return API.cardById(entry.id).catch(() => null);
     }));
     cards = [...loaded.filter(Boolean), ...cards];
@@ -456,8 +458,14 @@
     }
   }
 
-  function openCardPreview(id) {
-    const card = getCard(id);
+  async function openCardPreview(id) {
+    let card = getCard(id);
+    if (API && card && card.desc === undefined) {
+      const loaded = await API.cardById(id);
+      if (!loaded) throw new Error("Não foi possível carregar os detalhes da carta.");
+      cards = [loaded, ...cards.filter(item => item.id !== String(id))];
+      card = loaded;
+    }
     if (!card) return;
     let dialog = document.querySelector('.card-preview-dialog');
     if (!dialog) {
@@ -822,9 +830,10 @@
       if (!card) return "";
       const quantity = Math.max(1, Number(item.quantity) || 1);
       const copiesAcrossSections = (deck.cards || []).filter(entry => String(entry.id) === String(item.id)).reduce((sum, entry) => sum + (Number(entry.quantity) || 0), 0);
-      return '<li><figure class="deck-card" data-card-id="' + card.id + '"><img src="' + escapeHtml(card.image) +
-        '" alt="Carta ' + escapeHtml(card.name) + '" width="421" height="614"><figcaption>' + escapeHtml(card.name) +
-        '</figcaption><div class="card-quantity" aria-label="Quantidade: ' + quantity + '"><button type="button" data-action="decrease" aria-label="Remover uma cópia">−</button>' +
+      const thumbnail = card.small_image_url || card.thumbnail;
+      const art = thumbnail ? '<img src="' + escapeHtml(thumbnail) + '" alt="" width="421" height="614" loading="lazy">' : '<span class="card-thumbnail-placeholder" aria-hidden="true">◇</span>';
+      return '<li><figure class="deck-card" data-card-id="' + card.id + '"><button class="card-preview-button" type="button" data-preview-card="' + card.id + '" aria-haspopup="dialog">' + art + '<span>' + escapeHtml(card.name) +
+        '</span></button><div class="card-quantity" aria-label="Quantidade: ' + quantity + '"><button type="button" data-action="decrease" aria-label="Remover uma cópia">−</button>' +
         '<output data-quantity>' + quantity + '</output><button type="button" data-action="increase" aria-label="Adicionar uma cópia"' + (copiesAcrossSections >= 3 ? ' disabled title="Limite de 3 cópias atingido"' : '') + '>+</button></div></figure></li>';
     }).join("") || '<li class="empty-decks">Este deck ainda não tem cartas.</li>';
 
@@ -897,6 +906,15 @@
 
   function init() {
     loadLanguage();
+    document.addEventListener("click", async event => {
+      const button = event.target.closest("[data-preview-card]");
+      if (!button || button.getAttribute("aria-busy") === "true") return;
+      button.disabled = true;
+      button.setAttribute("aria-busy", "true");
+      try { button.disabled = false; await openCardPreview(button.dataset.previewCard); }
+      catch (error) { alert(error.message || "Não foi possível carregar os detalhes da carta."); }
+      finally { button.disabled = false; button.removeAttribute("aria-busy"); }
+    });
     setupAccountAuth();
     renderHome();
     renderDeckList();
@@ -937,8 +955,6 @@
       if (input && params.has("q")) input.value = params.get("q") || "";
       if (input && (input.value || Array.from(params.keys()).some(key => key !== "q"))) renderSearchResults(input.value, results, false, searchForm);
       if (results) results.addEventListener("click", async event => {
-        const previewButton = event.target.closest("[data-preview-card]");
-        if (previewButton) { openCardPreview(previewButton.dataset.previewCard); return; }
         const favoriteButton = event.target.closest("[data-favorite-card]");
         if (!favoriteButton) return;
         favoriteButton.disabled = true;

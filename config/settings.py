@@ -14,6 +14,7 @@ from pathlib import Path
 import os
 import sys
 from dotenv import load_dotenv
+from datetime import timedelta
 
 from django.conf.global_settings import AUTH_USER_MODEL
 
@@ -134,6 +135,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+#SIMPLEJWT
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20),
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/

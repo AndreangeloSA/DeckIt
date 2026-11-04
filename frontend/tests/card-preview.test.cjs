@@ -18,6 +18,7 @@ test('search thumbnails and accessible responsive card preview', async () => {
         images.push(url.pathname);
         return route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="421" height="614"><rect width="421" height="614" fill="tan"/></svg>' });
       }
+      if (url.pathname.includes('/api/decks/decks/')) return route.fulfill({ json: { id: 1, name: 'Test deck', description: 'Full width description', card: [{card: 42, card_quantity: 1}] } });
       if (url.pathname.includes('/api/')) return route.fulfill({ json: { results: [card], count: 1, next: null } });
       const file = path.join(__dirname, '..', decodeURIComponent(url.pathname));
       const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript', '.png': 'image/png', '.jpg': 'image/jpeg' };
@@ -61,6 +62,36 @@ test('search thumbnails and accessible responsive card preview', async () => {
     assert.equal(await page.locator('dialog img').getAttribute('src'), card.image_url);
     await page.mouse.click(1, 1);
     assert.equal(await page.locator('dialog').evaluate(el => el.open), false);
+    card.small_image_url = 'https://images.test/small.jpg';
+    await page.evaluate(() => localStorage.clear());
+    await page.goto('http://deckit.test/index.html');
+    await page.locator('[data-preview-card="46986414"]').click();
+    await page.locator('dialog[open]').waitFor();
+    assert.equal(await page.locator('dialog h2').textContent(), card.name);
+    await page.keyboard.press('Escape');
+    await page.evaluate(() => {
+      localStorage.setItem('deckit.api.session.v1', JSON.stringify({access:'test', user:{username:'test'}}));
+      localStorage.setItem('deckit.local.theme', 'dark');
+    });
+    await page.goto('http://deckit.test/deck.html?id=1');
+    await page.locator('.deck-card').waitFor();
+    for (const width of [360, 1280]) {
+      await page.setViewportSize({width, height:800});
+      await page.evaluate(() => document.documentElement.dataset.theme = 'dark');
+      const layout = await page.evaluate(() => {
+        const desc = document.querySelector('#single-deck-description').getBoundingClientRect();
+        const actions = document.querySelector('.deck-actions').getBoundingClientRect();
+        const card = document.querySelector('.deck-card');
+        return {descRight:desc.right, actionsRight:actions.right, bg:getComputedStyle(card).backgroundColor, surface:getComputedStyle(document.documentElement).getPropertyValue('--surface').trim()};
+      });
+      assert.ok(Math.abs(layout.descRight-layout.actionsRight)<1);
+      assert.equal(layout.bg,'rgb(53, 49, 58)');
+      await page.locator('[data-preview-card]').click();
+      await page.locator('dialog[open]').waitFor();
+      assert.equal(await page.locator('dialog h2').textContent(),card.name);
+      await page.keyboard.press('Escape');
+    }
+    assert.equal(await page.locator('[data-quantity]').textContent(),'1');
     assert.deepEqual(errors, []);
   } finally { await browser.close(); }
 });
