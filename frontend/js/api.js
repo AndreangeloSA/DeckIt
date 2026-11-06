@@ -12,6 +12,27 @@
   let session = null;
   try { session = JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); } catch (_) { session = null; }
 
+  let wakeUpPromise = null;
+
+  function wakeUpAPI() {
+  if (!wakeUpPromise) {
+    wakeUpPromise = fetch(url("health/"))
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("API indisponível");
+        }
+        return true;
+      })
+      .catch(error => {
+        console.error("Erro ao conectar à API:", error);
+        wakeUpPromise = null;
+        return false;
+      });
+  }
+
+    return wakeUpPromise;
+  }
+
   function saveSession(next) {
     session = next;
     if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
@@ -214,4 +235,5 @@
     request, login, register, logout, listDecks, getDeck, createDeck, editDeck, deleteDeck,
     searchCards, cardById, addCard, removeCard, getStats, getFavorites, addFavorite, removeFavorite
   };
+  void wakeUpAPI();
 })();

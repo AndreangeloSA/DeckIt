@@ -5,7 +5,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from apps.decks.models import Deck, CardsOnDeck
-from apps.decks.serializers import DeckSerializer, CardQuantitySerializer
+from apps.decks.serializers import DeckSerializer, CardQuantitySerializer, DeckCardSerializer
+
 
 #Creates new deck
 class CreateDeck(APIView):
@@ -42,7 +43,6 @@ class DeckDelete(APIView):
 #Adds card to users decks, checks for ownership
 class ManageCards(APIView):
     permission_classes = (IsAuthenticated,)
-
 
     #validates what cards can be placed into the specific deck type
     def deck_type_card_validation(self, card, section):

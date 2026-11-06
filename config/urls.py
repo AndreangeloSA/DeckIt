@@ -1,41 +1,12 @@
-"""
-URL configuration for config project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/6.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework_simplejwt.views import (TokenObtainPairView,TokenRefreshView,)
-from apps.decks.views import CreateDeck, ViewDeck, DeckList, ManageCards, EditDeck, DeckDelete, CardUsageStats
-from apps.users.views import RegisterView, Logout, Favorite
+from config.health import health_check
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/cards/', include('apps.cards.urls')),
     path('api/users/', include('apps.users.urls')),
     path('api/decks/', include('apps.decks.urls')),
-    path('register/', RegisterView.as_view(), name='register'),
-    path('token/',TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('token/refresh/',TokenRefreshView.as_view(),name='token_refresh'),
-    path('create/',CreateDeck.as_view(),name='create'),
-    path('manage_cards/', ManageCards.as_view(), name='manage_cards'),
-    path('delete/', DeckDelete.as_view(), name='delete'),
-    path('edit/', EditDeck.as_view(), name='edit'),
-    path('decks/<int:deck_id>/', ViewDeck.as_view(), name='view'),
-    path('decklist/', DeckList.as_view(), name='decklist'),
-    path('logout/', Logout.as_view(), name='logout'),
-    path('favorite/', Favorite.as_view(), name='favorite'),
-    path('card_usage_stats/', CardUsageStats.as_view(), name='card_usage_stats'),
-    path('favorite/', Favorite.as_view(), name='favorite-list')
+    path('api/health/', health_check, name='health')
 ]
+

@@ -100,10 +100,42 @@
     }
   };
   Object.assign(translations.en, {
+    "Carregando decks…": "Loading decks…",
+    "Carregando estatísticas…": "Loading statistics…",
+    "Não foi possível carregar os decks.": "Could not load decks.",
+    "Entre na sua conta para ver as cartas favoritas.": "Sign in to view your favorite cards.",
+    "Carta adicionada com sucesso.": "Card added successfully.",
+    "Pesquisa": "Search",
+    "Ver cartas favoritas": "View favorite cards",
+    "Nenhuma carta favorita.": "No favorite cards yet.",
+    "Conta criada com sucesso.": "Account created successfully.",
+    "Login realizado com sucesso.": "Signed in successfully.",
+    "Deck excluído com sucesso.": "Deck deleted.",
+    "Alterações salvas.": "Changes saved.",
+    "Deck criado com sucesso.": "Deck created.",
+    "Carregando cartas favoritas…": "Loading favorite cards…",
+    "Não foi possível carregar os favoritos.": "Could not load favorites.",
+    "DeckIt — Cartas favoritas": "DeckIt — Favorite cards",
     "Qtd.": "Qty.", "Nome da carta...": "Card name...", "Pesquisar cartas pelo nome...": "Search cards by name...",
     "Ex.: Dragões de olhos azuis": "e.g. Blue-Eyes Dragons", "Descrição": "Description", "Descreva seu deck...": "Describe your deck..."
   });
   Object.assign(translations.es, {
+    "Carregando decks…": "Cargando mazos…",
+    "Carregando estatísticas…": "Cargando estadísticas…",
+    "Não foi possível carregar os decks.": "No se pudieron cargar los mazos.",
+    "Entre na sua conta para ver as cartas favoritas.": "Inicia sesión para ver tus cartas favoritas.",
+    "Carta adicionada com sucesso.": "Carta añadida correctamente.",
+    "Pesquisa": "Búsqueda",
+    "Ver cartas favoritas": "Ver cartas favoritas",
+    "Nenhuma carta favorita.": "Aún no hay cartas favoritas.",
+    "Conta criada com sucesso.": "Cuenta creada correctamente.",
+    "Login realizado com sucesso.": "Sesión iniciada.",
+    "Deck excluído com sucesso.": "Mazo eliminado.",
+    "Alterações salvas.": "Cambios guardados.",
+    "Deck criado com sucesso.": "Mazo creado.",
+    "Carregando cartas favoritas…": "Cargando cartas favoritas…",
+    "Não foi possível carregar os favoritos.": "No se pudieron cargar los favoritos.",
+    "DeckIt — Cartas favoritas": "DeckIt — Cartas favoritas",
     "Qtd.": "Cant.", "Nome da carta...": "Nombre de la carta...", "Pesquisar cartas pelo nome...": "Buscar cartas por nombre...",
     "Ex.: Dragões de olhos azuis": "Ej.: Dragones de ojos azules", "Descrição": "Descripción", "Descreva seu deck...": "Describe tu mazo..."
   });
@@ -174,17 +206,22 @@
   let favoriteIds = new Set();
   let favoritesLoaded = false;
   let apiStats = null;
+  let collectionState = "ready";
+  const spinner = '<span class="collection-spinner" aria-hidden="true"></span>';
+
   let cardSearchSequence = 0;
   let builderSearchSequence = 0;
 
   async function restoreApiData({ deckList = false, coverLimit = 0, stats = false, favorites = false } = {}) {
     if (!API || !API.session) { apiMode = false; return false; }
     apiMode = true;
+    const owner = API.session.user?.username;
     const [deckResult, statsResult, favoritesResult] = await Promise.allSettled([
       deckList ? API.listDecks() : Promise.resolve(null),
       stats ? API.getStats() : Promise.resolve(null),
       favorites ? API.getFavorites() : Promise.resolve(null)
     ]);
+    if (!API.session || API.session.user?.username !== owner) return false;
     if (deckResult.status === "fulfilled" && deckResult.value) decks = deckResult.value;
     else if (deckList) console.warn("Não foi possível carregar os decks.", deckResult.reason);
     if (statsResult.status === "fulfilled" && statsResult.value) apiStats = statsResult.value;
@@ -232,19 +269,37 @@
     const profile = Boolean($(".account-stats"));
     const deckListPage = document.body.classList.contains("decks-document");
     const homePage = Boolean($(".deck-list"));
+    if (!profile && !deckListPage && !homePage) return true;
+    collectionState = "loading";
+    renderHome();
+    renderDeckList();
+    updateAccountStats();
     const loaded = await restoreApiData({
       deckList: profile || deckListPage || homePage,
       coverLimit: deckListPage ? true : homePage ? 2 : 0,
       stats: profile,
       favorites: profile
     });
-    if (loaded) { renderHome(); renderDeckList(); updateAccountStats(); }
+    if (!API.session) return false;
+    collectionState = loaded ? "ready" : "error";
+    renderHome();
+    renderDeckList();
+    updateAccountStats();
     return loaded;
   }
 
   function updateAccountStats() {
     const stats = $(".account-stats");
     if (!stats) return;
+    stats.setAttribute("aria-busy", String(collectionState === "loading"));
+    if (collectionState !== "ready") {
+      stats.querySelectorAll("[data-profile-stat]").forEach(value => {
+        value.innerHTML = collectionState === "loading"
+          ? spinner + '<span class="sr-only">' + translateValue("Carregando estatísticas…") + '</span>'
+          : "—";
+      });
+      return;
+    }
     const deckCount = $('[data-profile-stat="decks"]', stats);
     const cardCount = $('[data-profile-stat="cards"]', stats);
     const mostUsedField = $('[data-profile-stat="most-used"]', stats);
@@ -396,7 +451,7 @@
       const password = $("#auth-password")?.value;
       const email = emailInput?.value.trim();
       if (!API) return;
-      if (submit) submit.disabled = true;
+      if (submit) setButtonBusy(submit, true);
       if (message) { message.hidden = true; message.textContent = ""; }
       try {
         if (registerMode) await API.register({ username, email, password });
@@ -404,16 +459,27 @@
         const loaded = await loadPageApiData();
         if (!loaded) throw new Error("A conta foi autenticada, mas não foi possível carregar seus dados.");
         showState(true);
+        alert(translateValue(registerMode ? "Conta criada com sucesso." : "Login realizado com sucesso."));
         renderHome(); renderDeckList(); updateAccountStats();
       } catch (error) {
         if (message) { message.textContent = error.message || "Não foi possível entrar."; message.hidden = false; }
-      } finally { if (submit) submit.disabled = false; }
+      } finally { if (submit) setButtonBusy(submit, false); }
     });
     if (logout) logout.addEventListener("click", async () => {
-      if (API) await API.logout().catch(() => {});
+      setButtonBusy(logout, true);
+      try {
+        if (API) await API.logout().catch(() => {});
+      } finally { setButtonBusy(logout, false); }
+      collectionState = "ready";
       apiMode = false; decks = loadDecks(); favoriteIds.clear(); apiStats = null;
       showState(false); renderHome(); renderDeckList(); updateAccountStats();
     });
+  }
+
+  function setButtonBusy(button, busy) {
+    button.disabled = busy;
+    if (busy) button.setAttribute("aria-busy", "true");
+    else button.removeAttribute("aria-busy");
   }
 
   function loadDecks() {
@@ -451,7 +517,8 @@
     try {
       if (apiMode) await API.deleteDeck(id);
       decks = decks.filter(deck => String(deck.id) !== String(id));
-      if (!apiMode) saveDecks();
+      if (!apiMode && !saveDecks()) { decks = loadDecks(); return false; }
+      alert(translateValue("Deck excluído com sucesso."));
       updateAccountStats();
       renderHome();
       renderDeckList();
@@ -506,18 +573,35 @@
     dialog.showModal();
   }
 
-  function cardImage(id) {
-    const card = getCard(id);
-    return card ? card.image : "assets/cards/" + encodeURIComponent(id) + ".jpg";
+  function thumbnailImage(card) {
+    if (!card) return '<span class="empty-deck-art" aria-hidden="true"></span>';
+    return '<img src="' + escapeHtml(card.small_image_url || card.thumbnail || card.image) + '" alt="" width="421" height="614">';
+  }
+
+  function thumbnailButton(card) {
+    return '<button type="button" class="card-preview-button thumbnail-trigger" data-preview-card="' + escapeHtml(card.id) +
+      '" aria-haspopup="dialog" aria-label="' + escapeHtml(card.name) + '">' + thumbnailImage(card) + '</button>';
+  }
+
+  function showDeckListStatus(list) {
+    const loading = collectionState === "loading";
+    list.setAttribute("aria-busy", String(loading));
+    if (collectionState === "ready") return false;
+    const row = document.createElement(list.tagName === "UL" ? "li" : "div");
+    row.className = "deck-list-status";
+    row.setAttribute("role", "status");
+    if (loading) row.innerHTML = spinner;
+    row.append(translateValue(loading ? "Carregando decks…" : "Não foi possível carregar os decks."));
+    list.replaceChildren(row);
+    return true;
   }
 
   function renderHome() {
     const list = $(".deck-list");
-    if (!list) return;
+    if (!list || showDeckListStatus(list)) return;
     list.innerHTML = decks.slice(0, 2).map(deck => {
       const first = getCard(deck.cards[0] && deck.cards[0].id);
-      return '<a class="deck deck-link" href="deck.html?id=' + encodeURIComponent(deck.id) + '">' +
-        '<img src="' + escapeHtml(first ? first.image : cardImage("46986414")) + '" alt="" width="421" height="614">' +
+      return '<a class="deck deck-link" href="deck.html?id=' + encodeURIComponent(deck.id) + '">' + thumbnailImage(first) +
         '<span class="deck-info"><strong>' + escapeHtml(deck.name) + '</strong><span>' + totalCards(deck) + ' cartas</span></span>' +
         '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m9 4 8 8-8 8"/></svg></a>';
     }).join("") || '<div class="deck empty-deck-card"><span class="empty-deck-art" aria-hidden="true"></span><span class="deck-info"><strong>Você ainda não criou decks.</strong><span>Seus decks aparecerão aqui.</span></span></div>';
@@ -527,19 +611,21 @@
   function renderDeckList() {
     const list = $("#user-decks") || $(".decks-grid");
     if (!list || !document.body.classList.contains("decks-document")) return;
+    const count = $(".deck-count");
+    if (showDeckListStatus(list)) {
+      if (count) count.textContent = "";
+      return;
+    }
     const search = ($("#deck-search")?.value || "").trim().toLocaleLowerCase("pt-BR");
     const sort = $("#deck-sort")?.value || "name";
     let visible = decks.filter(deck => deck.name.toLocaleLowerCase("pt-BR").includes(search));
     visible.sort((a, b) => sort === "updated"
       ? (b.updatedAt || 0) - (a.updatedAt || 0)
       : a.name.localeCompare(b.name, "pt-BR"));
-    const count = $(".deck-count");
     if (count) count.textContent = decks.length + (decks.length === 1 ? " deck" : " decks");
     list.innerHTML = visible.map(deck => {
       const first = getCard(deck.cards[0] && deck.cards[0].id);
-      return '<li><article class="collection-deck"><button class="delete-deck-icon" type="button" data-delete-deck="' + escapeHtml(deck.id) + '" aria-label="Excluir deck" title="Excluir deck">×</button><div class="deck-cover"><img src="' +
-        escapeHtml(first ? first.image : cardImage("46986414")) + '" alt="' + escapeHtml(first ? first.name : "Carta") +
-        '" width="421" height="614"></div><div class="collection-info"><h3>' + escapeHtml(deck.name) +
+      return '<li><article class="collection-deck"><button class="delete-deck-icon" type="button" data-delete-deck="' + escapeHtml(deck.id) + '" aria-label="Excluir deck" title="Excluir deck">×</button><div class="deck-cover">' + thumbnailImage(first) + '</div><div class="collection-info"><h3>' + escapeHtml(deck.name) +
         '</h3><p>' + totalCards(deck) + ' cartas</p><a class="open-deck" href="deck.html?id=' +
         encodeURIComponent(deck.id) + '">Abrir deck</a></div></article></li>';
     }).join("") || '<li class="empty-decks">' + (decks.length ? 'Nenhum deck encontrado.' : 'Você ainda não criou decks.') + '</li>';
@@ -548,10 +634,54 @@
       if (!button) return;
       event.preventDefault();
       event.stopPropagation();
-      button.disabled = true;
-      if (!await deleteDeckById(button.getAttribute("data-delete-deck"))) button.disabled = false;
+      setButtonBusy(button, true);
+      if (!await deleteDeckById(button.getAttribute("data-delete-deck"))) setButtonBusy(button, false);
     };
     applyLanguage();
+  }
+
+  function thumbnailName(name) {
+    const characters = Array.from(name);
+    const label = characters.length > 24 ? characters.slice(0, 21).join("").trimEnd() + "..." : name;
+    return '<span class="thumbnail-name" title="' + escapeHtml(name) + '">' + escapeHtml(label) + '</span>';
+  }
+
+  function resultCardMarkup(card, includeAddButton) {
+    const action = includeAddButton
+      ? '<div class="card-add-controls"><label>Qtd.<select data-add-quantity><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label><button type="button" data-add-card="' + card.id + '">Adicionar ao deck</button></div>'
+      : '<button class="favorite-card-button" type="button" data-favorite-card="' + card.id + '" aria-pressed="' + favoriteIds.has(card.id) + '">' + (favoriteIds.has(card.id) ? '♥' : '♡') + '</button>';
+    const thumbnail = card.small_image_url || card.thumbnail;
+    const image = thumbnail ? '<img src="' + escapeHtml(thumbnail) + '" alt="" width="421" height="614" loading="lazy" decoding="async">' : '<span class="card-thumbnail-placeholder" aria-hidden="true">◇</span>';
+    const preview = '<button class="card-preview-button" type="button" data-preview-card="' + escapeHtml(card.id) + '" aria-haspopup="dialog" aria-label="' + escapeHtml(card.name) + '">' + image + thumbnailName(card.name) + '</button>';
+    return '<li><figure class="' + (includeAddButton ? 'builder-card' : 'search-card') + '" data-card-id="' + escapeHtml(card.id) + '">' + preview + action + '</figure></li>';
+  }
+
+  async function favoriteCards() {
+    await loadApiFavorites();
+    const ids = Array.from(favoriteIds);
+    const results = [];
+    for (let offset = 0; offset < ids.length; offset += 8) {
+      const batch = await Promise.all(ids.slice(offset, offset + 8).map(id => API.cardById(id)));
+      results.push(...batch.filter(Boolean));
+    }
+    const loaded = new Set(results.map(card => card.id));
+    cards = [...results, ...cards.filter(card => !loaded.has(card.id))];
+    return { results, count: results.length, next: null };
+  }
+
+  async function renderFavoritesPage() {
+    const list = $("#favorite-results");
+    if (!list) return;
+    const status = $("#favorites-status");
+    if (!API?.session) {
+      location.replace("account.html");
+      return;
+    }
+    try {
+      const { results } = await favoriteCards();
+      list.innerHTML = results.map(card => resultCardMarkup(card, false)).join("");
+      status.textContent = results.length ? "" : translateValue("Nenhuma carta favorita.");
+    } catch (error) { status.textContent = error.message || translateValue("Não foi possível carregar os favoritos."); }
   }
 
   async function renderSearchResults(query, target, includeAddButton, filterForm = null, page = 1, append = false) {
@@ -576,15 +706,7 @@
     const found = payload.results || [];
     const markup = failure
       ? '<li class="search-error">' + escapeHtml(failure) + '</li>'
-      : found.map(card => {
-        const action = includeAddButton
-          ? '<div class="card-add-controls"><label>Qtd.<select data-add-quantity><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label><button type="button" data-add-card="' + card.id + '">Adicionar ao deck</button></div>'
-          : '<button class="favorite-card-button" type="button" data-favorite-card="' + card.id + '" aria-pressed="' + favoriteIds.has(card.id) + '">' + (favoriteIds.has(card.id) ? '♥' : '♡') + '</button>';
-        const thumbnail = card.small_image_url || card.thumbnail;
-        const image = thumbnail ? '<img src="' + escapeHtml(thumbnail) + '" alt="" width="421" height="614" loading="lazy" decoding="async">' : '<span class="card-thumbnail-placeholder" aria-hidden="true">◇</span>';
-        const preview = includeAddButton ? image : '<button class="card-preview-button" type="button" data-preview-card="' + escapeHtml(card.id) + '" aria-haspopup="dialog" aria-label="' + escapeHtml(card.name) + '">' + image + '<span>' + escapeHtml(card.name) + '</span></button>';
-        return '<li><figure class="' + (includeAddButton ? 'builder-card' : 'search-card') + '" data-card-id="' + escapeHtml(card.id) + '">' + preview + (includeAddButton ? '<h3>' + escapeHtml(card.name) + '</h3>' : '') + action + '</figure></li>';
-      }).join("");
+      : found.map(card => resultCardMarkup(card, includeAddButton)).join("");
     target.innerHTML = append ? target.innerHTML + markup : markup;
     const section = target.closest(".search-results");
     if (section) {
@@ -594,9 +716,9 @@
       let more = $(".search-load-more", section);
       if (!more) { more = document.createElement("button"); more.type = "button"; more.className = "search-load-more"; more.textContent = "Carregar mais"; section.append(more); }
       more.hidden = !payload.next || Boolean(failure);
-      more.disabled = false;
+      setButtonBusy(more, false);
       more.onclick = async () => {
-        more.disabled = true;
+        setButtonBusy(more, true);
         const nextPage = Number(target.dataset.nextPage || 1) + 1;
         target.dataset.nextPage = String(nextPage);
         await renderSearchResults(normalized, target, includeAddButton, filterForm, nextPage, true);
@@ -630,7 +752,9 @@
     const search = $("#builder-search");
     const results = $("#card-search-results");
     const chosen = $("#deck-empty-grid");
-    const addSearchButton = $("#search-cards-button");
+    const queryForm = $("#builder-query-form");
+    const notice = $("#card-added-notice");
+    let noticeTimer;
 
     function renderChosen() {
       if (!chosen) return;
@@ -638,8 +762,7 @@
       const cardsMarkup = entries.length ? entries.map(([id, quantity]) => {
         const card = getCard(id);
         if (!card) return "";
-        return '<article class="chosen-card" data-selected-card="' + card.id + '"><img src="' + escapeHtml(card.image) +
-          '" alt="' + escapeHtml(card.name) + '" width="421" height="614"><div><strong>' + escapeHtml(card.name) +
+        return '<article class="chosen-card" data-selected-card="' + card.id + '">' + thumbnailButton(card) + '<div><strong>' + thumbnailName(card.name) +
           '</strong><label>Qtd. <select data-selected-quantity="' + card.id + '">' +
           [1, 2, 3].map(value => '<option value="' + value + '"' + (quantity === value ? " selected" : "") + '>' + value + '</option>').join("") +
           '</select></label><button type="button" data-remove-card="' + card.id + '">Remover</button></div></article>';
@@ -656,14 +779,16 @@
     loadMoreButton.hidden = true;
     if (results) results.insertAdjacentElement("afterend", loadMoreButton);
 
-    async function searchCards(page = 1, append = false) {
+    async function searchCards(page = 1, append = false, favoritesOnly = false) {
       if (!results) return;
       const query = (search && search.value || "").trim();
       const requestId = ++builderSearchSequence;
       let payload = { results: [], count: 0, next: null };
       let failure = "";
-      if (query) {
-        try { payload = await queryCards(query, {}, page); }
+      const filters = Object.fromEntries(Array.from(new FormData(queryForm), ([key, value]) => [key, value.trim()]).filter(([, value]) => value));
+      const showResults = Boolean(query || favoritesOnly || Object.keys(filters).length);
+      if (showResults) {
+        try { payload = favoritesOnly ? await favoriteCards() : await queryCards(query, filters, page); }
         catch (error) { failure = error.message || "Não foi possível pesquisar cartas na API."; }
       }
       if (requestId !== builderSearchSequence) return;
@@ -671,35 +796,43 @@
       const existingIds = append
         ? new Set(Array.from(results.querySelectorAll("[data-card-id]")).map(card => card.getAttribute("data-card-id")))
         : new Set();
-      const markup = found.filter(card => !existingIds.has(String(card.id))).map(card => '<li><article class="builder-card" data-card-id="' + card.id +
-        '"><img src="' + escapeHtml(card.image) + '" alt="' + escapeHtml(card.name) + '" width="421" height="614"><h3>' +
-        escapeHtml(card.name) + '</h3><div class="card-add-controls"><label>Qtd.<select data-add-quantity>' +
-        '<option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label>' +
-        '<button type="button" data-add-card="' + card.id + '">Adicionar ao deck</button></div></article></li>').join("");
+      const markup = found.filter(card => !existingIds.has(String(card.id))).map(card => resultCardMarkup(card, true)).join("");
       if (failure) {
         if (append) results.insertAdjacentHTML("beforeend", '<li class="search-error">' + escapeHtml(failure) + '</li>');
         else results.innerHTML = '<li class="search-error">' + escapeHtml(failure) + '</li>';
       } else if (append) results.insertAdjacentHTML("beforeend", markup);
       else results.innerHTML = markup;
-      results.hidden = !query;
+      results.hidden = !showResults;
       const hint = $(".builder-heading span");
       const count = payload.count ?? found.length;
       if (hint) {
-        hint.textContent = failure || (query ? count + (count === 1 ? " carta encontrada" : " cartas encontradas") : "");
-        hint.hidden = !query;
+        hint.textContent = failure || (favoritesOnly && !count ? translateValue("Nenhuma carta favorita.") : showResults ? count + (count === 1 ? " carta encontrada" : " cartas encontradas") : "");
+        hint.hidden = !showResults;
       }
-      loadMoreButton.hidden = !query || !payload.next || Boolean(failure);
-      loadMoreButton.disabled = false;
+      loadMoreButton.hidden = !showResults || !payload.next || Boolean(failure);
+      setButtonBusy(loadMoreButton, false);
       loadMoreButton.dataset.nextPage = String(page + 1);
       applyLanguage();
     }
 
     loadMoreButton.addEventListener("click", async () => {
       const nextPage = Number(loadMoreButton.dataset.nextPage || 2);
-      loadMoreButton.disabled = true;
+      setButtonBusy(loadMoreButton, true);
       await searchCards(nextPage, true);
     });
 
+    const favoritesButton = $("#builder-favorites");
+    favoritesButton.addEventListener("click", async () => {
+      if (!API?.session) {
+        alert(translateValue("Entre na sua conta para ver as cartas favoritas."));
+        return;
+      }
+      clearTimeout(builderSearchTimer);
+      search.value = "";
+      setButtonBusy(favoritesButton, true);
+      try { await searchCards(1, false, true); }
+      finally { setButtonBusy(favoritesButton, false); }
+    });
     let builderSearchTimer;
     searchCards();
     renderChosen();
@@ -709,7 +842,9 @@
       if (!search.value.trim()) { searchCards(); return; }
       builderSearchTimer = setTimeout(searchCards, 2000);
     });
-    if (addSearchButton) addSearchButton.addEventListener("click", () => {
+    queryForm.addEventListener("submit", event => {
+      event.preventDefault();
+      if (!$("#builder-card-filters").hidden) $(".card-search-filter", form).click();
       clearTimeout(builderSearchTimer);
       searchCards();
     });
@@ -722,6 +857,9 @@
         const quantityField = add.closest(".card-add-controls")?.querySelector("[data-add-quantity]");
         selected.set(id, Math.min(3, Math.max(1, Number(quantityField && quantityField.value) || 1)));
         renderChosen();
+        clearTimeout(noticeTimer);
+        notice.textContent = translateValue("Carta adicionada com sucesso.") + " " + getCard(id).name;
+        noticeTimer = setTimeout(() => { notice.textContent = ""; }, 3500);
       }
       if (remove) {
         selected.delete(remove.getAttribute("data-remove-card"));
@@ -758,7 +896,7 @@
       };
       if (apiMode) {
         const submitButton = $("#save-deck-button");
-        if (submitButton) submitButton.disabled = true;
+        if (submitButton) setButtonBusy(submitButton, true);
         try {
           let saved;
           if (editing) {
@@ -776,16 +914,20 @@
               }
             }
           }
+          alert(translateValue(editing ? "Alterações salvas." : "Deck criado com sucesso."));
           location.href = "deck.html?id=" + encodeURIComponent(saved.id);
         } catch (error) {
           alert(error.message || "Não foi possível salvar o deck na API.");
-          if (submitButton) submitButton.disabled = false;
+          if (submitButton) setButtonBusy(submitButton, false);
         }
         return;
       }
       if (editing) decks = decks.map(item => item.id === editing.id ? deck : item);
       else decks.push(deck);
-      if (saveDecks()) location.href = "deck.html?id=" + encodeURIComponent(deck.id);
+      if (saveDecks()) {
+        alert(translateValue(editing ? "Alterações salvas." : "Deck criado com sucesso."));
+        location.href = "deck.html?id=" + encodeURIComponent(deck.id);
+      }
     });
   }
 
@@ -828,9 +970,9 @@
     };
     const deleteButton = $("#delete-deck-button");
     if (deleteButton) deleteButton.onclick = async () => {
-      deleteButton.disabled = true;
+      setButtonBusy(deleteButton, true);
       if (await deleteDeckById(deck.id)) location.href = "decks.html";
-      else deleteButton.disabled = false;
+      else setButtonBusy(deleteButton, false);
     };
     list.innerHTML = (deck.cards || []).map(item => {
       const card = getCard(item.id);
@@ -840,8 +982,8 @@
       const thumbnail = card.small_image_url || card.thumbnail;
       const fallback = thumbnail ? ' onerror="this.onerror=null;this.src=\'' + escapeHtml(card.image) + '\'"' : '';
       const art = thumbnail ? '<img src="' + escapeHtml(thumbnail) + '"' + fallback + ' alt="' + escapeHtml(card.name) + '" width="421" height="614" loading="lazy" decoding="async">' : '<span class="card-thumbnail-placeholder" aria-hidden="true">◇</span>';
-      return '<li><figure class="deck-card" data-card-id="' + card.id + '"><button class="card-preview-button" type="button" data-preview-card="' + card.id + '" aria-haspopup="dialog">' + art + '<span>' + escapeHtml(card.name) +
-        '</span></button><div class="card-quantity" aria-label="Quantidade: ' + quantity + '"><button type="button" data-action="decrease" aria-label="Remover uma cópia">−</button>' +
+      return '<li><figure class="deck-card" data-card-id="' + card.id + '"><button class="card-preview-button" type="button" data-preview-card="' + card.id + '" aria-haspopup="dialog">' + art + thumbnailName(card.name) +
+        '</button><div class="card-quantity" aria-label="Quantidade: ' + quantity + '"><button type="button" data-action="decrease" aria-label="Remover uma cópia">−</button>' +
         '<output data-quantity>' + quantity + '</output><button type="button" data-action="increase" aria-label="Adicionar uma cópia"' + (copiesAcrossSections >= 3 ? ' disabled title="Limite de 3 cópias atingido"' : '') + '>+</button></div></figure></li>';
     }).join("") || '<li class="empty-decks">Este deck ainda não tem cartas.</li>';
 
@@ -855,12 +997,12 @@
       const copiesAcrossSections = deck.cards.filter(card => String(card.id) === cardId).reduce((sum, card) => sum + (Number(card.quantity) || 0), 0);
       if (button.dataset.action === "increase" && copiesAcrossSections >= 3) return;
       if (apiMode) {
-        button.disabled = true;
+        setButtonBusy(button, true);
         try {
           if (button.dataset.action === "increase") await API.addCard({ deck: deck.id, card: cardId, card_quantity: 1, section: entry.section || "main" });
           else await API.removeCard({ deck: deck.id, card: cardId, card_quantity: 1, section: entry.section || "main" });
           await renderDeckPage();
-        } catch (error) { alert(error.message || "Não foi possível atualizar a quantidade."); button.disabled = false; }
+        } catch (error) { alert(error.message || "Não foi possível atualizar a quantidade."); setButtonBusy(button, false); }
         return;
       }
       if (button.dataset.action === "increase") entry.quantity = Number(entry.quantity || 0) + 1;
@@ -917,16 +1059,17 @@
     document.addEventListener("click", async event => {
       const button = event.target.closest("[data-preview-card]");
       if (!button || button.getAttribute("aria-busy") === "true") return;
-      button.disabled = true;
       button.setAttribute("aria-busy", "true");
-      try { button.disabled = false; await openCardPreview(button.dataset.previewCard); }
+      try { await openCardPreview(button.dataset.previewCard); }
       catch (error) { alert(error.message || "Não foi possível carregar os detalhes da carta."); }
-      finally { button.disabled = false; button.removeAttribute("aria-busy"); }
+      finally { button.removeAttribute("aria-busy"); }
     });
+    renderFavoritesPage();
     setupAccountAuth();
-    renderHome();
-    renderDeckList();
     if (!API?.session) {
+      renderHome();
+      renderDeckList();
+      updateAccountStats();
       renderCreatePage();
       renderDeckPage();
     }
@@ -940,19 +1083,18 @@
     if (searchForm) {
       const input = $("#card-query");
       const results = $("#search-results");
-      const filterButton = $(".card-search-filter", searchForm);
       const filterPanel = $(".card-filter-panel", searchForm);
-      if (filterButton && filterPanel) filterButton.addEventListener("click", () => {
-        filterPanel.hidden = !filterPanel.hidden;
-        filterButton.setAttribute("aria-expanded", String(!filterPanel.hidden));
-      });
       const params = new URLSearchParams(location.search);
       if (filterPanel) filterPanel.querySelectorAll("[name]").forEach(field => { if (params.has(field.name)) field.value = params.get(field.name); });
       let searchTimer;
-      searchForm.addEventListener("submit", event => {
+      searchForm.addEventListener("submit", async event => {
         event.preventDefault();
         clearTimeout(searchTimer);
-        renderSearchResults(input ? input.value : "", results, false, searchForm);
+        const submit = searchForm.querySelector('[type="submit"]');
+        if (submit.disabled) return;
+        setButtonBusy(submit, true);
+        try { await renderSearchResults(input ? input.value : "", results, false, searchForm); }
+        finally { setButtonBusy(submit, false); }
       });
       if (input) input.addEventListener("input", () => {
         clearTimeout(searchTimer);
@@ -962,29 +1104,42 @@
       });
       if (input && params.has("q")) input.value = params.get("q") || "";
       if (input && (input.value || Array.from(params.keys()).some(key => key !== "q"))) renderSearchResults(input.value, results, false, searchForm);
-      if (results) results.addEventListener("click", async event => {
+    }
+    const favoriteGrid = $("#favorite-results") || $("#search-results");
+    if (favoriteGrid) favoriteGrid.addEventListener("click", async event => {
         const favoriteButton = event.target.closest("[data-favorite-card]");
         if (!favoriteButton) return;
-        favoriteButton.disabled = true;
+        setButtonBusy(favoriteButton, true);
         try {
           await toggleFavorite(favoriteButton.getAttribute("data-favorite-card"));
+          if (favoriteGrid.id === "favorite-results" && !favoriteIds.has(favoriteButton.dataset.favoriteCard)) {
+            favoriteButton.closest("li").remove();
+            if (!favoriteGrid.children.length) $("#favorites-status").textContent = translateValue("Nenhuma carta favorita.");
+          }
           favoriteButton.setAttribute("aria-pressed", String(favoriteIds.has(favoriteButton.getAttribute("data-favorite-card"))));
           favoriteButton.textContent = favoriteIds.has(favoriteButton.getAttribute("data-favorite-card")) ? "♥" : "♡";
         } catch (error) { alert(error.message || "Não foi possível atualizar os favoritos."); }
-        finally { favoriteButton.disabled = false; }
+        finally { setButtonBusy(favoriteButton, false); }
       });
-    }
-    document.querySelectorAll(".search-bar").forEach(form => {
-      const filterButton = $(".card-search-filter", form);
-      const filterPanel = $(".card-filter-panel", form);
-      if (filterButton && filterPanel) filterButton.addEventListener("click", () => {
-        filterPanel.hidden = !filterPanel.hidden;
-        filterButton.setAttribute("aria-expanded", String(!filterPanel.hidden));
+    document.querySelectorAll(".card-search-filter[aria-controls]").forEach(button => {
+      const panel = document.getElementById(button.getAttribute("aria-controls"));
+      function setOpen(open) {
+        panel.hidden = !open;
+        button.setAttribute("aria-expanded", String(open));
+      }
+      button.addEventListener("click", () => setOpen(panel.hidden));
+      document.addEventListener("click", event => {
+        if (!panel.hidden && !panel.contains(event.target) && !button.contains(event.target)) setOpen(false);
+      });
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && !panel.hidden) {
+          setOpen(false);
+          button.focus();
+        }
       });
     });
     initSettings();
 
-    updateAccountStats();
     if (API?.session) loadPageApiData();
   }
 

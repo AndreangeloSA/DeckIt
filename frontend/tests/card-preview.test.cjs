@@ -18,6 +18,7 @@ test('search thumbnails and accessible responsive card preview', async () => {
         images.push(url.pathname);
         return route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="421" height="614"><rect width="421" height="614" fill="tan"/></svg>' });
       }
+      if (url.pathname === '/api/users/favorite/') return route.fulfill({ json: { cards: [{ card: 42 }], favorite_card_count: 1 } });
       if (url.pathname.includes('/api/decks/decks/')) return route.fulfill({ json: { id: 1, name: 'Test deck', description: 'Full width description', card: [{card: 42, card_quantity: 1}] } });
       if (url.pathname.includes('/api/')) return route.fulfill({ json: { results: [card], count: 1, next: null } });
       const file = path.join(__dirname, '..', decodeURIComponent(url.pathname));
@@ -64,6 +65,11 @@ test('search thumbnails and accessible responsive card preview', async () => {
     assert.equal(await page.locator('dialog').evaluate(el => el.open), false);
     card.small_image_url = 'https://images.test/small.jpg';
     await page.evaluate(() => localStorage.clear());
+    await page.goto('http://deckit.test/favorites.html?preview');
+    await page.waitForURL('**/account.html');
+    await page.locator('#auth-panel').waitFor();
+    await page.goto('http://deckit.test/create-deck.html');
+    await page.locator('#builder-favorites').waitFor({ state: 'visible' });
     await page.goto('http://deckit.test/index.html');
     await page.locator('[data-preview-card="46986414"]').click();
     await page.locator('dialog[open]').waitFor();
@@ -92,6 +98,63 @@ test('search thumbnails and accessible responsive card preview', async () => {
       await page.keyboard.press('Escape');
     }
     assert.equal(await page.locator('[data-quantity]').textContent(),'1');
+    await page.goto('http://deckit.test/account.html');
+    for (const [width, ratio] of [[360, 1], [1280, 0.6]]) {
+      await page.setViewportSize({ width, height: 800 });
+      const box = await page.locator('.stat-card').first().boundingBox();
+      assert.ok(Math.abs(box.height - box.width * ratio) < 1);
+    }
+    await page.locator('[href="favorites.html"]').click();
+    const favorite = page.locator('[data-preview-card="42"]');
+    await favorite.waitFor();
+    assert.equal(await favorite.locator('img').getAttribute('src'), card.small_image_url);
+    await favorite.click();
+    assert.equal(await page.locator('dialog[open] h2').textContent(), card.name);
+    for (const path of ['create-deck.html', 'create-deck.html?edit=1']) {
+      await page.goto('http://deckit.test/' + path);
+      await page.locator('#builder-favorites').waitFor();
+      const toggle = page.locator('[aria-controls="builder-card-filters"]');
+      const level = path.includes('?') ? '7' : '8';
+      await toggle.click();
+      await page.locator('#builder-card-filters [name="level"]').fill(level);
+      await page.locator('.create-heading').click();
+      assert.equal(await toggle.getAttribute('aria-expanded'), 'false');
+      const filtered = page.waitForRequest(request => new URL(request.url()).searchParams.get('level') === level);
+      await page.locator('#search-cards-button').click();
+      await filtered;
+      await page.locator('[data-add-card="42"]').waitFor();
+      await page.locator('#builder-favorites').click();
+      await page.locator('[data-add-quantity]').selectOption('2');
+      await page.locator('[data-add-card="42"]').click();
+      assert.equal(await page.locator('[data-selected-quantity="42"]').inputValue(), '2');
+      await page.locator('.chosen-card [data-preview-card="42"] img').click();
+      assert.equal(await page.locator('dialog[open] h2').textContent(), card.name);
+      await page.keyboard.press('Escape');
+      assert.equal(await page.locator('[data-selected-quantity="42"]').inputValue(), '2');
+      assert.equal(await page.locator('#card-added-notice').textContent(), 'Carta adicionada com sucesso. ' + card.name);
+    }
+    for (const [file, region] of [
+      ['decks.html', '#user-decks'], ['index.html', '.deck-list'], ['account.html', '.account-stats']
+    ]) {
+      await page.evaluate(() => Object.keys(localStorage)
+        .filter(key => key.startsWith('deckit.api.cache.')).forEach(key => localStorage.removeItem(key)));
+      let release;
+      const pending = new Promise(resolve => { release = resolve; });
+      await page.route('**/api/decks/decklist/', async route => {
+        await pending;
+        await route.fulfill({json: {decks: []}});
+      });
+      await page.goto('http://deckit.test/' + file);
+      const section = page.locator(region);
+      await section.locator('.collection-spinner').first().waitFor();
+      assert.equal(await section.getAttribute('aria-busy'), 'true');
+      assert.ok(!(await section.textContent()).includes('Você ainda não criou decks.'));
+      release();
+      await page.locator(region + '[aria-busy="false"]').waitFor();
+      if (file === 'account.html') assert.equal(await section.locator('[data-profile-stat="decks"]').textContent(), '0');
+      else assert.ok((await section.textContent()).includes('Você ainda não criou decks.'));
+      await page.unroute('**/api/decks/decklist/');
+    }
     assert.deepEqual(errors, []);
   } finally { await browser.close(); }
 });
