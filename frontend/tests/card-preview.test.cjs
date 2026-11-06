@@ -65,6 +65,16 @@ test('search thumbnails and accessible responsive card preview', async () => {
     assert.equal(await page.locator('dialog').evaluate(el => el.open), false);
     card.small_image_url = 'https://images.test/small.jpg';
     await page.evaluate(() => localStorage.clear());
+    await page.evaluate(() => localStorage.setItem('deckit.local.decks.v1', JSON.stringify([
+      {id: 'old', name: 'Deck local anterior', cards: []}
+    ])));
+    for (const file of ['index.html', 'decks.html']) {
+      await page.goto('http://deckit.test/' + file);
+      await page.getByText('Entre na sua conta para ver seus decks.').waitFor();
+      assert.equal(await page.getByText('Deck local anterior').count(), 0);
+    }
+    await page.goto('http://deckit.test/deck.html?id=old');
+    await page.waitForURL('**/account.html');
     await page.goto('http://deckit.test/favorites.html?preview');
     await page.waitForURL('**/account.html');
     await page.locator('#auth-panel').waitFor();
@@ -156,5 +166,20 @@ test('search thumbnails and accessible responsive card preview', async () => {
       await page.unroute('**/api/decks/decklist/');
     }
     assert.deepEqual(errors, []);
+    await page.route('**/api/decks/decklist/', route => route.fulfill({json: {decks: [
+      {id: 1, name: 'Deck com carta', card: [{card: 42, card_quantity: 1}]},
+      {id: 2, name: 'Deck vazio', card: []}
+    ]}}));
+    await page.evaluate(() => Object.keys(localStorage).filter(k => k.startsWith('deckit.api.cache.')).forEach(k => localStorage.removeItem(k)));
+    for (const [file, selector] of [['index.html', '.deck-list img'], ['decks.html', '.deck-cover img']]) {
+      await page.goto('http://deckit.test/' + file);
+      const covers = page.locator(selector);
+      await covers.nth(1).waitFor();
+      assert.equal(await covers.first().getAttribute('src'), card.small_image_url);
+      assert.equal(await covers.nth(1).getAttribute('src'), 'assets/cards/46986414.jpg');
+      await covers.first().click();
+      assert.equal(await page.locator('dialog[open]').count(), 0);
+      assert.ok(page.url().endsWith(file));
+    }
   } finally { await browser.close(); }
 });

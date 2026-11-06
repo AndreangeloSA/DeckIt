@@ -12,6 +12,19 @@
   let session = null;
   try { session = JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); } catch (_) { session = null; }
 
+  function checkStoredSession() {
+    let stored = null;
+    try { stored = JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); } catch (_) {}
+    if (session?.user?.username !== stored?.user?.username) location.reload();
+    else session = stored;
+  }
+  window.addEventListener("storage", event => {
+    if (event.key === SESSION_KEY || event.key === null) checkStoredSession();
+  });
+  window.addEventListener("pageshow", event => {
+    if (event.persisted) checkStoredSession();
+  });
+
   let wakeUpPromise = null;
 
   function wakeUpAPI() {
@@ -118,6 +131,7 @@
   }
 
   async function cachedGet(category, path, params, ttl, options = {}) {
+    if (category !== "cards" && !session?.user?.username) throw new Error("Faça login para acessar os dados da conta.");
     const key = cacheKey(category, path, params);
     const cached = readCache(key, ttl);
     if (cached.hit) return cached.value;

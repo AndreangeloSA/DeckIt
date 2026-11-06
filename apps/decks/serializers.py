@@ -11,6 +11,12 @@ class DeckCardSerializer(serializers.ModelSerializer):
 
 class DeckSerializer(serializers.ModelSerializer):
 
+    card = DeckCardSerializer(
+        source="deck_containing_card",
+        many=True,
+        read_only=True,
+    )
+
     class Meta:
         model = Deck
         fields = "__all__"

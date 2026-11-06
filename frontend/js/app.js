@@ -100,6 +100,8 @@
     }
   };
   Object.assign(translations.en, {
+    "Entre na sua conta para ver seus decks.": "Sign in to see your decks.",
+    "Entre na sua conta para salvar o deck.": "Sign in to save your deck.",
     "Carregando decks…": "Loading decks…",
     "Carregando estatísticas…": "Loading statistics…",
     "Não foi possível carregar os decks.": "Could not load decks.",
@@ -120,6 +122,8 @@
     "Ex.: Dragões de olhos azuis": "e.g. Blue-Eyes Dragons", "Descrição": "Description", "Descreva seu deck...": "Describe your deck..."
   });
   Object.assign(translations.es, {
+    "Entre na sua conta para ver seus decks.": "Inicia sesión para ver tus mazos.",
+    "Entre na sua conta para salvar o deck.": "Inicia sesión para guardar tu mazo.",
     "Carregando decks…": "Cargando mazos…",
     "Carregando estatísticas…": "Cargando estadísticas…",
     "Não foi possível carregar os decks.": "No se pudieron cargar los mazos.",
@@ -471,7 +475,7 @@
         if (API) await API.logout().catch(() => {});
       } finally { setButtonBusy(logout, false); }
       collectionState = "ready";
-      apiMode = false; decks = loadDecks(); favoriteIds.clear(); apiStats = null;
+      apiMode = false; decks = []; favoritesLoaded = false; favoriteIds.clear(); apiStats = null;
       showState(false); renderHome(); renderDeckList(); updateAccountStats();
     });
   }
@@ -500,7 +504,7 @@
     return [];
   }
 
-  let decks = loadDecks();
+  let decks = [];
 
   function saveDecks() {
     try {
@@ -578,6 +582,12 @@
     return '<img src="' + escapeHtml(card.small_image_url || card.thumbnail || card.image) + '" alt="" width="421" height="614">';
   }
 
+  function deckCoverImage(card) {
+    const fallback = "assets/cards/46986414.jpg";
+    const source = card?.small_image_url || card?.thumbnail || card?.image || fallback;
+    return '<img src="' + escapeHtml(source) + '" alt="" width="421" height="614" onerror="this.onerror=null;this.src=&quot;' + fallback + '&quot;">';
+  }
+
   function thumbnailButton(card) {
     return '<button type="button" class="card-preview-button thumbnail-trigger" data-preview-card="' + escapeHtml(card.id) +
       '" aria-haspopup="dialog" aria-label="' + escapeHtml(card.name) + '">' + thumbnailImage(card) + '</button>';
@@ -586,12 +596,12 @@
   function showDeckListStatus(list) {
     const loading = collectionState === "loading";
     list.setAttribute("aria-busy", String(loading));
-    if (collectionState === "ready") return false;
+    if (API?.session && collectionState === "ready") return false;
     const row = document.createElement(list.tagName === "UL" ? "li" : "div");
     row.className = "deck-list-status";
     row.setAttribute("role", "status");
     if (loading) row.innerHTML = spinner;
-    row.append(translateValue(loading ? "Carregando decks…" : "Não foi possível carregar os decks."));
+    row.append(translateValue(!API?.session ? "Entre na sua conta para ver seus decks." : loading ? "Carregando decks…" : "Não foi possível carregar os decks."));
     list.replaceChildren(row);
     return true;
   }
@@ -601,9 +611,9 @@
     if (!list || showDeckListStatus(list)) return;
     list.innerHTML = decks.slice(0, 2).map(deck => {
       const first = getCard(deck.cards[0] && deck.cards[0].id);
-      return '<a class="deck deck-link" href="deck.html?id=' + encodeURIComponent(deck.id) + '">' + thumbnailImage(first) +
+      return '<div class="deck">' + deckCoverImage(first) + '<a class="deck-link" href="deck.html?id=' + encodeURIComponent(deck.id) + '">' +
         '<span class="deck-info"><strong>' + escapeHtml(deck.name) + '</strong><span>' + totalCards(deck) + ' cartas</span></span>' +
-        '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m9 4 8 8-8 8"/></svg></a>';
+        '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m9 4 8 8-8 8"/></svg></a></div>';
     }).join("") || '<div class="deck empty-deck-card"><span class="empty-deck-art" aria-hidden="true"></span><span class="deck-info"><strong>Você ainda não criou decks.</strong><span>Seus decks aparecerão aqui.</span></span></div>';
     applyLanguage();
   }
@@ -625,7 +635,7 @@
     if (count) count.textContent = decks.length + (decks.length === 1 ? " deck" : " decks");
     list.innerHTML = visible.map(deck => {
       const first = getCard(deck.cards[0] && deck.cards[0].id);
-      return '<li><article class="collection-deck"><button class="delete-deck-icon" type="button" data-delete-deck="' + escapeHtml(deck.id) + '" aria-label="Excluir deck" title="Excluir deck">×</button><div class="deck-cover">' + thumbnailImage(first) + '</div><div class="collection-info"><h3>' + escapeHtml(deck.name) +
+      return '<li><article class="collection-deck"><button class="delete-deck-icon" type="button" data-delete-deck="' + escapeHtml(deck.id) + '" aria-label="Excluir deck" title="Excluir deck">×</button><div class="deck-cover">' + deckCoverImage(first) + '</div><div class="collection-info"><h3>' + escapeHtml(deck.name) +
         '</h3><p>' + totalCards(deck) + ' cartas</p><a class="open-deck" href="deck.html?id=' +
         encodeURIComponent(deck.id) + '">Abrir deck</a></div></article></li>';
     }).join("") || '<li class="empty-decks">' + (decks.length ? 'Nenhum deck encontrado.' : 'Você ainda não criou decks.') + '</li>';
@@ -922,12 +932,7 @@
         }
         return;
       }
-      if (editing) decks = decks.map(item => item.id === editing.id ? deck : item);
-      else decks.push(deck);
-      if (saveDecks()) {
-        alert(translateValue(editing ? "Alterações salvas." : "Deck criado com sucesso."));
-        location.href = "deck.html?id=" + encodeURIComponent(deck.id);
-      }
+      alert(translateValue("Entre na sua conta para salvar o deck."));
     });
   }
 
@@ -1067,6 +1072,10 @@
     renderFavoritesPage();
     setupAccountAuth();
     if (!API?.session) {
+      if ($("#deck-card-list") || ($("#create-deck-form") && new URLSearchParams(location.search).has("edit"))) {
+        location.replace("account.html");
+        return;
+      }
       renderHome();
       renderDeckList();
       updateAccountStats();
