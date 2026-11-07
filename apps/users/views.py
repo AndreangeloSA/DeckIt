@@ -7,6 +7,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from apps.cards.models import Card
 from apps.cards.serializers import CardSerializer
+from apps.cards.views import deck_section_selector
 from apps.users.models import FavoriteCards
 from apps.users.serializers import RegisterSerializer, FavoriteCardsSerializer
 
@@ -72,7 +73,12 @@ class Favorite(APIView):
 
     def get(self, request):
 
+        deck_section = request.query_params.get("deck_section")
         favorite_list = FavoriteCards.objects.filter(user=request.user)
+
+        if deck_section:
+            favorite_list = deck_section_selector_favorites(deck_section=deck_section, favorite_list=favorite_list)
+
         serializer = FavoriteCardsSerializer(favorite_list, many=True)
 
         data = {
@@ -81,3 +87,25 @@ class Favorite(APIView):
         }
 
         return Response(data, status=status.HTTP_200_OK)
+
+def deck_section_selector_favorites(deck_section, favorite_list):
+
+    allowed_extra_deck_types = {
+        "Fusion Monster",
+        "Link Monster",
+        "Pendulum Effect Fusion Monster",
+        "Synchro Monster",
+        "Synchro Pendulum Effect Monster",
+        "Synchro Tuner Monster",
+        "XYZ Monster",
+        "XYZ Pendulum Effect Monster",
+    }
+
+    if deck_section == "extra":
+        return favorite_list.filter(card__type__in=allowed_extra_deck_types)
+
+    elif deck_section == "main":
+        return favorite_list.exclude(card__type__in=allowed_extra_deck_types)
+
+    else:
+        return favorite_list

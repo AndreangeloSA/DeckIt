@@ -100,6 +100,9 @@
     }
   };
   Object.assign(translations.en, {
+    "Main": "Main",
+    "Extra": "Extra",
+    "Side": "Side",
     "Entre na sua conta para ver seus decks.": "Sign in to see your decks.",
     "Entre na sua conta para salvar o deck.": "Sign in to save your deck.",
     "Carregando decks…": "Loading decks…",
@@ -122,6 +125,9 @@
     "Ex.: Dragões de olhos azuis": "e.g. Blue-Eyes Dragons", "Descrição": "Description", "Descreva seu deck...": "Describe your deck..."
   });
   Object.assign(translations.es, {
+    "Main": "Principal",
+    "Extra": "Extra",
+    "Side": "Banquillo",
     "Entre na sua conta para ver seus decks.": "Inicia sesión para ver tus mazos.",
     "Entre na sua conta para salvar o deck.": "Inicia sesión para guardar tu mazo.",
     "Carregando decks…": "Cargando mazos…",
@@ -323,7 +329,9 @@
   }
 
   async function queryCards(query, filters = {}, page = 1) {
-    if (!query.trim() && !Object.values(filters).some(value => String(value).trim())) return { results: [], count: 0, next: null };
+    if (!query.trim() && !Object.entries(filters).some(([key, value]) => key !== "deck_section" && String(value).trim())) {
+      return { results: [], count: 0, next: null };
+    }
     if (!API) return { results: cards.filter(card => card.name.toLocaleLowerCase("pt-BR").includes(query.trim().toLocaleLowerCase("pt-BR"))), count: cards.length, next: null };
     const payload = await API.searchCards(query.trim(), filters, page);
     const results = payload.results || [];
@@ -343,12 +351,14 @@
   }
 
   async function syncDeckCardChanges(deckId, before, after) {
-    const beforeMap = new Map(before.map(item => [String(item.id), item]));
-    const afterMap = new Map(after.map(item => [String(item.id), item]));
+    const entryKey = item => (item.section || "main") + ":" + String(item.id);
+    const beforeMap = new Map(before.map(item => [entryKey(item), item]));
+    const afterMap = new Map(after.map(item => [entryKey(item), item]));
     const operations = [];
-    for (const id of new Set([...beforeMap.keys(), ...afterMap.keys()])) {
-      const oldEntry = beforeMap.get(id);
-      const newEntry = afterMap.get(id);
+    for (const key of new Set([...beforeMap.keys(), ...afterMap.keys()])) {
+      const oldEntry = beforeMap.get(key);
+      const newEntry = afterMap.get(key);
+      const id = String(oldEntry?.id || newEntry?.id);
       const oldQty = Number(oldEntry?.quantity) || 0;
       const newQty = Number(newEntry?.quantity) || 0;
       const oldSection = oldEntry?.section || "main";
@@ -666,9 +676,9 @@
     return '<li><figure class="' + (includeAddButton ? 'builder-card' : 'search-card') + '" data-card-id="' + escapeHtml(card.id) + '">' + preview + action + '</figure></li>';
   }
 
-  async function favoriteCards() {
-    await loadApiFavorites();
-    const ids = Array.from(favoriteIds);
+  async function favoriteCards(section) {
+    const result = await API.getFavorites({ deck_section: section });
+    const ids = (result.cards || []).map(item => String(item.card));
     const results = [];
     for (let offset = 0; offset < ids.length; offset += 8) {
       const batch = await Promise.all(ids.slice(offset, offset + 8).map(id => API.cardById(id)));
@@ -757,26 +767,57 @@
     }
 
     const selected = new Map();
-    if (editing) editing.cards.forEach(item => selected.set(String(item.id), Number(item.quantity) || 1));
+    if (editing) editing.cards.forEach(item => {
+      const section = item.section || "main";
+      selected.set(section + ":" + String(item.id), {
+        id: String(item.id),
+        quantity: Number(item.quantity) || 1,
+        section
+      });
+    });
 
     const search = $("#builder-search");
     const results = $("#card-search-results");
     const chosen = $("#deck-empty-grid");
     const queryForm = $("#builder-query-form");
+    const sectionTabs = Array.from(document.querySelectorAll("[data-deck-section]"));
     const notice = $("#card-added-notice");
     let noticeTimer;
+    let activeSection = "main";
+
+    function setActiveSection(section) {
+      activeSection = section;
+      sectionTabs.forEach(tab => {
+        const active = tab.dataset.deckSection === section;
+        tab.setAttribute("aria-selected", String(active));
+        tab.tabIndex = active ? 0 : -1;
+      });
+      builderSearchSequence += 1;
+      if (results) {
+        results.replaceChildren();
+        results.hidden = true;
+      }
+      if (search) search.value = "";
+      if (search) search.focus();
+      const hint = $(".builder-heading span");
+      if (hint) { hint.textContent = ""; hint.hidden = true; }
+      loadMoreButton.hidden = true;
+      setButtonBusy(loadMoreButton, false);
+      renderChosen();
+    }
 
     function renderChosen() {
       if (!chosen) return;
-      const entries = Array.from(selected.entries());
-      const cardsMarkup = entries.length ? entries.map(([id, quantity]) => {
+      const entries = Array.from(selected.values()).filter(item => item.section === activeSection);
+      const cardsMarkup = entries.length ? entries.map(item => {
+        const { id, quantity, section } = item;
         const card = getCard(id);
         if (!card) return "";
-        return '<article class="chosen-card" data-selected-card="' + card.id + '">' + thumbnailButton(card) + '<div><strong>' + thumbnailName(card.name) +
-          '</strong><label>Qtd. <select data-selected-quantity="' + card.id + '">' +
+        return '<article class="chosen-card" data-selected-card="' + section + ':' + card.id + '">' + thumbnailButton(card) + '<div><strong>' + thumbnailName(card.name) +
+          '</strong><label>Qtd. <select data-selected-quantity="' + section + ':' + card.id + '">' +
           [1, 2, 3].map(value => '<option value="' + value + '"' + (quantity === value ? " selected" : "") + '>' + value + '</option>').join("") +
-          '</select></label><button type="button" data-remove-card="' + card.id + '">Remover</button></div></article>';
-      }).join("") : '<p>As cartas adicionadas aparecerão aqui.</p>';
+          '</select></label><button type="button" data-remove-card="' + section + ':' + card.id + '">Remover</button></div></article>';
+      }).join("") : '<p>Nenhuma carta adicionada à seção ' + translateValue(activeSection === "main" ? "Main" : activeSection === "extra" ? "Extra" : "Side") + '.</p>';
       const saveLabel = editing ? "Salvar alterações" : "Criar deck";
       chosen.innerHTML = '<div class="chosen-card-items">' + cardsMarkup + '</div><div class="deck-grid-actions"><a href="decks.html">Cancelar</a><button id="save-deck-button" type="submit">' + saveLabel + '</button></div>';
       applyLanguage();
@@ -796,9 +837,11 @@
       let payload = { results: [], count: 0, next: null };
       let failure = "";
       const filters = Object.fromEntries(Array.from(new FormData(queryForm), ([key, value]) => [key, value.trim()]).filter(([, value]) => value));
-      const showResults = Boolean(query || favoritesOnly || Object.keys(filters).length);
+      filters.deck_section = activeSection;
+      const hasSearchFilters = Object.keys(filters).some(key => key !== "deck_section");
+      const showResults = Boolean(query || favoritesOnly || hasSearchFilters);
       if (showResults) {
-        try { payload = favoritesOnly ? await favoriteCards() : await queryCards(query, filters, page); }
+        try { payload = favoritesOnly ? await favoriteCards(activeSection) : await queryCards(query, filters, page); }
         catch (error) { failure = error.message || "Não foi possível pesquisar cartas na API."; }
       }
       if (requestId !== builderSearchSequence) return;
@@ -843,6 +886,10 @@
       try { await searchCards(1, false, true); }
       finally { setButtonBusy(favoritesButton, false); }
     });
+    sectionTabs.forEach(tab => tab.addEventListener("click", () => {
+      if (tab.dataset.deckSection === activeSection) return;
+      setActiveSection(tab.dataset.deckSection);
+    }));
     let builderSearchTimer;
     searchCards();
     renderChosen();
@@ -865,7 +912,11 @@
       if (add) {
         const id = add.getAttribute("data-add-card");
         const quantityField = add.closest(".card-add-controls")?.querySelector("[data-add-quantity]");
-        selected.set(id, Math.min(3, Math.max(1, Number(quantityField && quantityField.value) || 1)));
+        selected.set(activeSection + ":" + id, {
+          id,
+          quantity: Math.min(3, Math.max(1, Number(quantityField && quantityField.value) || 1)),
+          section: activeSection
+        });
         renderChosen();
         clearTimeout(noticeTimer);
         notice.textContent = translateValue("Carta adicionada com sucesso.") + " " + getCard(id).name;
@@ -879,7 +930,13 @@
 
     form.addEventListener("change", event => {
       const field = event.target.closest("[data-selected-quantity]");
-      if (field) selected.set(field.getAttribute("data-selected-quantity"), Math.min(3, Math.max(1, Number(field.value) || 1)));
+      if (field) {
+        const item = selected.get(field.getAttribute("data-selected-quantity"));
+        if (item) selected.set(field.getAttribute("data-selected-quantity"), {
+          ...item,
+          quantity: Math.min(3, Math.max(1, Number(field.value) || 1))
+        });
+      }
     });
 
     form.addEventListener("submit", async event => {
@@ -901,7 +958,7 @@
         id: editing ? editing.id : "deck-" + now.toString(36),
         name,
         description,
-        cards: Array.from(selected, ([id, quantity]) => ({ id, quantity })),
+        cards: Array.from(selected.values()),
         updatedAt: now
       };
       if (apiMode) {
@@ -915,11 +972,11 @@
             saved = await API.getDeck(editing.id).catch(() => ({ ...updated, cards: deck.cards }));
           } else {
             saved = await API.createDeck({ name, description });
-            for (const [cardId, quantity] of selected) {
+            for (const { id: cardId, quantity, section } of selected.values()) {
               let remaining = quantity;
               while (remaining > 0) {
                 const amount = Math.min(3, remaining);
-                await API.addCard({ deck: saved.id, card: cardId, card_quantity: amount, section: "main" });
+                await API.addCard({ deck: saved.id, card: cardId, card_quantity: amount, section });
                 remaining -= amount;
               }
             }

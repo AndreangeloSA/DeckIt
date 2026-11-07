@@ -71,6 +71,7 @@ class ManageCards(APIView):
         return False
 
     def validate_section_capacity(self, deck, section, quantity_to_add):
+
         limits = {
             CardsOnDeck.Section.MAIN: 60,
             CardsOnDeck.Section.EXTRA: 15,

@@ -38,6 +38,11 @@
             <h2 id="card-choice-title">Adicionar cartas ao deck</h2>
             <span aria-live="polite" hidden></span>
           </div>
+          <div class="deck-section-tabs" role="tablist" aria-label="Seção do deck">
+            <button type="button" role="tab" id="section-main" data-deck-section="main" aria-controls="card-search-results" aria-selected="true">Principal</button>
+            <button type="button" role="tab" id="section-extra" data-deck-section="extra" aria-controls="card-search-results" aria-selected="false" tabindex="-1">Extra</button>
+            <button type="button" role="tab" id="section-side" data-deck-section="side" aria-controls="card-search-results" aria-selected="false" tabindex="-1">Adicional</button>
+          </div>
           <div class="card-search">
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="7.7"/><path d="m16.5 16.5 5 5"/></svg>
             <label class="sr-only" for="builder-search">Pesquisar cartas pelo nome</label>

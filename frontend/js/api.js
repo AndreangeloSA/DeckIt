@@ -239,7 +239,7 @@
     return result ? { ...result, card: result.card === undefined ? undefined : String(result.card) } : result;
   }
   async function getStats() { return cachedGet("stats", "decks/card_usage_stats/", {}, CACHE_TTL.user); }
-  async function getFavorites() { return cachedGet("favorites", "users/favorite/", {}, CACHE_TTL.user); }
+  async function getFavorites(params = {}) { return cachedGet("favorites", "users/favorite/", params, CACHE_TTL.user); }
   async function addFavorite(id) { const result = await request(`users/favorite/${encodeURIComponent(id)}/`, { method: "POST" }); clearUserCache("favorites"); return result; }
   async function removeFavorite(id) { const result = await request(`users/favorite/${encodeURIComponent(id)}/`, { method: "DELETE" }); clearUserCache("favorites"); return result; }
 

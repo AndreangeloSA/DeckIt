@@ -12,3 +12,6 @@ class UserProfile(models.Model):
 class FavoriteCards(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     card = models.ForeignKey(Card, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ("user", "card")

@@ -41,9 +41,30 @@ class TestUserRegister(APITestCase):
             race="Spellcaster",
         )
 
+        self.card2 = Card.objects.create(
+            id=3,
+            name="Starving Venom Fusion Dragon",
+            type="Fusion Monster",
+            desc="2 DARK monsters on the field, except Tokens",
+            atk=2800,
+            defense=2000,
+            level=8,
+            race="Dragon",
+        )
+
         self.favorite_data = {
             "user": self.user,
             "id": 46986414
+        }
+
+        self.favorite_data2 = {
+            "user": self.user,
+            "id": 3
+        }
+
+        self.request_data = {
+            "user": self.user,
+            "deck_section": "main"
         }
 
     def test_user_register(self):
@@ -157,5 +178,35 @@ class TestUserRegister(APITestCase):
 
         self.assertEqual(
             FavoriteCards.objects.filter(user=self.user).count(),
+            1
+        )
+
+    def test_get_favorite_card_list_main_deck(self):
+
+        self.client.force_authenticate(user=self.user)
+
+        post_response = self.client.post(f"/api/users/favorite/{self.favorite_data['id']}/", self.favorite_data)
+        post_response2 = self.client.post(f"/api/users/favorite/{self.favorite_data2['id']}/", self.favorite_data2)
+
+        self.assertEqual(
+            post_response.status_code,
+            status.HTTP_201_CREATED
+        )
+
+        self.assertEqual(
+            post_response2.status_code,
+            status.HTTP_201_CREATED
+        )
+
+        response = self.client.get(f"/api/users/favorite/", self.request_data)
+        data = response.json()
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK
+        )
+
+        self.assertEqual(
+            len(data['cards']),
             1
         )

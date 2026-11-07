@@ -10,6 +10,29 @@ class CardSearchPagination(PageNumberPagination):
     page_size_query_param = "page_size"
     max_page_size = 100
 
+# Restricts what card types will appear
+def deck_section_selector(deck_section, cards):
+
+    allowed_extra_deck_types = {
+        "Fusion Monster",
+        "Link Monster",
+        "Pendulum Effect Fusion Monster",
+        "Synchro Monster",
+        "Synchro Pendulum Effect Monster",
+        "Synchro Tuner Monster",
+        "XYZ Monster",
+        "XYZ Pendulum Effect Monster",
+    }
+
+    if deck_section == "extra":
+        return cards.filter(type__in=allowed_extra_deck_types)
+
+    elif deck_section == "main":
+        return cards.exclude(type__in=allowed_extra_deck_types)
+
+    else:
+        return cards
+
 
 class CardSearchView(APIView):
 
@@ -31,12 +54,13 @@ class CardSearchView(APIView):
         card_atk_exact = request.query_params.get("atk")
         card_atk_min = request.query_params.get("atk_min")
         card_atk_max = request.query_params.get("atk_max")
-        card_def_exact = request.query_params.get("def")
+        card_def_exact = request.query_params.get("defense")
         card_def_min = request.query_params.get("def_min")
         card_def_max = request.query_params.get("def_max")
         card_level_exact = request.query_params.get("level")
         card_level_min = request.query_params.get("level_min")
         card_level_max = request.query_params.get("level_max")
+        deck_section = request.query_params.get("deck_section")
 
         #filters cards based on basic parameters
         if card_id:
@@ -66,10 +90,13 @@ class CardSearchView(APIView):
             return queryset
 
         cards = apply_range(cards, "atk", card_atk_exact, card_atk_min, card_atk_max)
-        cards = apply_range(cards, "def", card_def_exact, card_def_min, card_def_max)
+        cards = apply_range(cards, "defense", card_def_exact, card_def_min, card_def_max)
         cards = apply_range(cards, "level", card_level_exact, card_level_min, card_level_max)
 
-        cards.order_by("id")
+        if deck_section:
+            cards = deck_section_selector(deck_section, cards)
+
+        cards = cards.order_by("id")
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(cards, request, view=self)
 
