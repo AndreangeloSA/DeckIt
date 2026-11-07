@@ -6,8 +6,6 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from apps.cards.models import Card
-from apps.cards.serializers import CardSerializer
-from apps.cards.views import deck_section_selector
 from apps.users.models import FavoriteCards
 from apps.users.serializers import RegisterSerializer, FavoriteCardsSerializer
 
@@ -92,6 +90,7 @@ def deck_section_selector_favorites(deck_section, favorite_list):
 
     allowed_extra_deck_types = {
         "Fusion Monster",
+        "Fusion Toon Effect Monster",
         "Link Monster",
         "Pendulum Effect Fusion Monster",
         "Synchro Monster",

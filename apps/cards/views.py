@@ -15,6 +15,7 @@ def deck_section_selector(deck_section, cards):
 
     allowed_extra_deck_types = {
         "Fusion Monster",
+        "Fusion Toon Effect Monster",
         "Link Monster",
         "Pendulum Effect Fusion Monster",
         "Synchro Monster",

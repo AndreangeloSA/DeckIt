@@ -48,6 +48,7 @@ class ManageCards(APIView):
     def deck_type_card_validation(self, card, section):
         allowed_extra_deck_types = {
             "Fusion Monster",
+            "Fusion Toon Effect Monster",
             "Link Monster",
             "Pendulum Effect Fusion Monster",
             "Synchro Monster",
