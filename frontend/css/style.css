@@ -301,6 +301,16 @@ button[aria-busy="true"]::after {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+.main :is(.search-card, .builder-card, .deck-card, .chosen-card) .thumbnail-name {
+  display: -webkit-box;
+  min-height: 2.7em;
+  overflow: hidden;
+  white-space: normal;
+  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
 .chosen-card strong { min-width: 0; }
 
 /* A largura de referência é a coluna da grade de favoritas, descontando sua borda e seu preenchimento. */

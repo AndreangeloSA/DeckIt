@@ -37,7 +37,15 @@
         </button>
         <button id="delete-deck-button" class="delete-deck-button" type="button" aria-label="Excluir deck" title="Excluir deck">Excluir deck</button>
       </div>
-      <section aria-label="Cartas do deck">
+      <section class="single-deck-cards" aria-label="Cartas do deck">
+        <div class="single-deck-section-bar">
+          <div class="deck-section-tabs" role="tablist" aria-label="Seção do deck">
+            <button type="button" role="tab" id="view-section-main" data-view-section="main" aria-controls="deck-card-list" aria-selected="true">Principal</button>
+            <button type="button" role="tab" id="view-section-extra" data-view-section="extra" aria-controls="deck-card-list" aria-selected="false" tabindex="-1">Extra</button>
+            <button type="button" role="tab" id="view-section-side" data-view-section="side" aria-controls="deck-card-list" aria-selected="false" tabindex="-1">Adicional</button>
+          </div>
+          <output id="deck-section-count" aria-live="polite">0 cartas</output>
+        </div>
         <ul id="deck-card-list" class="single-deck-grid"></ul>
       </section>
     </main>

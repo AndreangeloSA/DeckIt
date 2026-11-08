@@ -169,13 +169,20 @@
   }
 
   function normalizeDeck(deck) {
-    const entries = deck.card || deck.deck_containing_card || [];
+    const hasSectionLists = Array.isArray(deck.main_deck_cards) || Array.isArray(deck.extra_deck_cards) || Array.isArray(deck.side_deck_cards);
+    const entries = hasSectionLists
+      ? [
+          ...(deck.main_deck_cards || []).map(entry => ({ ...entry, section: entry.section || "main" })),
+          ...(deck.extra_deck_cards || []).map(entry => ({ ...entry, section: entry.section || "extra" })),
+          ...(deck.side_deck_cards || []).map(entry => ({ ...entry, section: entry.section || "side" }))
+        ]
+      : (deck.card || deck.deck_containing_card || []);
     return {
       ...deck,
       id: String(deck.id),
       description: deck.description || "",
       cards: entries.map(entry => ({
-        id: String(entry.card), quantity: Number(entry.card_quantity) || 1, section: entry.section || "main"
+        id: String(entry.card ?? entry.id), quantity: Number(entry.card_quantity ?? entry.quantity) || 1, section: entry.section || "main"
       }))
     };
   }

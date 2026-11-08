@@ -996,6 +996,7 @@
   async function renderDeckPage() {
     const list = $("#deck-card-list");
     if (!list) return;
+    let activeDeckSection = list.dataset.activeSection || "main";
     const params = new URLSearchParams(location.search);
     const id = params.get("id");
     if (!id) {
@@ -1036,7 +1037,18 @@
       if (await deleteDeckById(deck.id)) location.href = "decks.html";
       else setButtonBusy(deleteButton, false);
     };
-    list.innerHTML = (deck.cards || []).map(item => {
+    const sectionCards = (deck.cards || []).filter(item => (item.section || "main") === activeDeckSection);
+    const sectionCount = sectionCards.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+    const sectionCountOutput = $("#deck-section-count");
+    if (sectionCountOutput) sectionCountOutput.textContent = sectionCount + " cartas";
+    const sectionTabs = document.querySelectorAll("[data-view-section]");
+    sectionTabs.forEach(tab => {
+      const selected = tab.dataset.viewSection === activeDeckSection;
+      tab.setAttribute("aria-selected", String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+    });
+    list.dataset.activeSection = activeDeckSection;
+    list.innerHTML = sectionCards.map(item => {
       const card = getCard(item.id);
       if (!card) return "";
       const quantity = Math.max(1, Number(item.quantity) || 1);
@@ -1070,12 +1082,18 @@
       if (button.dataset.action === "increase") entry.quantity = Number(entry.quantity || 0) + 1;
       if (button.dataset.action === "decrease") {
         entry.quantity = Number(entry.quantity || 0) - 1;
-        if (entry.quantity <= 0) deck.cards = deck.cards.filter(card => String(card.id) !== cardId);
+        if (entry.quantity <= 0) deck.cards = deck.cards.filter(card => !(String(card.id) === cardId && (card.section || "main") === (entry.section || "main")));
       }
       deck.updatedAt = Date.now();
       saveDecks();
       renderDeckPage();
     };
+    document.querySelectorAll("[data-view-section]").forEach(tab => {
+      tab.onclick = () => {
+        list.dataset.activeSection = tab.dataset.viewSection;
+        renderDeckPage();
+      };
+    });
     applyLanguage();
   }
 

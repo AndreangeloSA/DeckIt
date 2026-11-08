@@ -229,6 +229,21 @@ class ViewDeck(APIView):
             or 0
         )
 
+        main_deck_cards = CardsOnDeck.objects.filter(
+            deck=deck,
+            section=CardsOnDeck.Section.MAIN,
+        )
+
+        extra_deck_cards = CardsOnDeck.objects.filter(
+            deck=deck,
+            section=CardsOnDeck.Section.EXTRA,
+        )
+
+        side_deck_cards = CardsOnDeck.objects.filter(
+            deck=deck,
+            section=CardsOnDeck.Section.SIDE,
+        )
+
         main_deck_total_card_quantity = (
                 CardsOnDeck.objects
                 .filter(deck=deck, section=CardsOnDeck.Section.MAIN)
@@ -250,7 +265,14 @@ class ViewDeck(APIView):
                 or 0
         )
 
+        main_deck_cards = DeckCardSerializer(main_deck_cards, many=True).data
+        extra_deck_cards = DeckCardSerializer(extra_deck_cards, many=True).data
+        side_deck_cards = DeckCardSerializer(side_deck_cards, many=True).data
+
         deck_info = dict(serializer.data)
+        deck_info["main_deck_cards"] = main_deck_cards
+        deck_info["extra_deck_cards"] = extra_deck_cards
+        deck_info["side_deck_cards"] = side_deck_cards
         deck_info["total_card_quantity"] = deck_total_card_quantity
         deck_info["main_total_card_quantity"] = main_deck_total_card_quantity
         deck_info["extra_total_card_quantity"] = extra_deck_total_card_quantity
