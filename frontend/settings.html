@@ -3,6 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+    (() => {
+      try {
+        const theme = localStorage.getItem("deckit.local.theme");
+        document.documentElement.dataset.theme = ["desert", "dark", "light"].includes(theme) ? theme : "desert";
+      } catch (_) {
+        document.documentElement.dataset.theme = "desert";
+      }
+    })();
+  </script>
   <meta name="theme-color" content="#f2e5cf">
   <link rel="icon" type="image/png" sizes="48x48" href="assets/logo/favicon.png">
   <title>DeckIt — Configurações</title>
