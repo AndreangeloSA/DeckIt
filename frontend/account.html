@@ -18,7 +18,7 @@
   <link rel="icon" type="image/png" sizes="48x48" href="assets/logo/favicon.png">
   <title>DeckIt — Minha conta</title>
   <link rel="stylesheet" href="css/style.css?v=20261104-full-theme">
-  <link rel="stylesheet" href="css/account.css">
+  <link rel="stylesheet" href="css/account.css?v=20261113-logout">
   <link rel="stylesheet" href="css/i18n-layout.css">
 </head>
 <body>
@@ -56,7 +56,7 @@
         <div class="avatar" aria-hidden="true">AS</div>
         <div class="profile-copy">
           <h2 id="profile-name">Andreângelo S. Andrade</h2>
-          <p id="profile-email">andreangelo@example.com</p>
+          <p id="profile-email"></p>
           <span class="member-label">Membro DeckIt</span>
         </div>
         <!--<button class="edit-profile" type="button" aria-disabled="true">Editar perfil</button>-->
@@ -72,17 +72,25 @@
         <h2 id="account-details-title">Dados da conta</h2>
         <dl class="account-details">
           <div><dt>Nome</dt><dd id="account-name">Andreângelo S. Andrade</dd></div>
-          <div><dt>E-mail</dt><dd id="account-email">andreangelo@example.com</dd></div>
+          <div><dt>E-mail</dt><dd id="account-email">—</dd></div>
+          <div><dt>Data de ingresso</dt><dd id="account-date-joined">—</dd></div>
           <div><dt>Idioma</dt><dd>Português (Brasil)</dd></div>
         </dl>
       </section>
       <section class="account-section" aria-labelledby="account-actions-title">
         <h2 id="account-actions-title">Conta</h2>
         <a class="account-action" href="settings.html"><span><strong>Configurações</strong><small>Tema e idioma</small></span><span aria-hidden="true">→</span></a>
-        <button id="logout-button" class="account-action logout-action" type="button"><span><strong>Sair da conta</strong><small>Encerrar sua sessão neste dispositivo</small></span><span aria-hidden="true">→</span></button>
+        <button id="logout-button" aria-haspopup="dialog" aria-controls="logout-dialog" class="account-action logout-action" type="button"><span><strong>Sair da conta</strong><small>Encerrar sua sessão neste dispositivo</small></span><span aria-hidden="true">→</span></button>
       </section>
       <p class="account-note" id="account-note">Os dados exibidos são exemplos visuais e ainda não estão vinculados a uma conta.</p>
       </div>
+      <dialog id="logout-dialog" aria-labelledby="logout-question">
+        <h2 id="logout-question">Deseja sair da conta?</h2>
+        <form method="dialog">
+          <button type="submit" value="cancel" autofocus>Cancelar</button>
+          <button type="submit" value="logout">Sair da conta</button>
+        </form>
+      </dialog>
     </main>
     <footer class="site-footer">
       <p><strong>DeckIt.</strong> <span>Desenvolvido por</span> <span class="author">Andreângelo S. Andrade</span> / <a class="repository-link" href="https://github.com/AndreangeloSA/DeckIt">github.com/AndreangeloSA/DeckIt</a></p>
@@ -97,6 +105,6 @@
     </nav>
   </div>
   <script src="js/api.js?v=20261103-persistent-cache" defer></script>
-  <script src="js/app.js?v=20261103-collection-edit-labels" defer></script>
+  <script src="js/app.js?v=20261113-account-info" defer></script>
 </body>
 </html>

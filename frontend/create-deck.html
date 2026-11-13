@@ -19,7 +19,7 @@
   <title>DeckIt — Criar deck</title>
   <link rel="stylesheet" href="css/style.css?v=20261104-full-theme">
   <link rel="stylesheet" href="css/decks.css">
-  <link rel="stylesheet" href="css/create-deck.css?v=20261104-full-theme">
+  <link rel="stylesheet" href="css/create-deck.css?v=20261113-save-dialog">
   <link rel="stylesheet" href="css/i18n-layout.css">
 </head>
 <body>
@@ -69,6 +69,10 @@
       </form>
       <div id="card-added-notice" role="status" aria-live="polite"></div>
 
+      <dialog id="deck-save-dialog" aria-labelledby="deck-save-message">
+        <p id="deck-save-message"></p>
+        <form method="dialog"><button type="submit" autofocus>OK</button></form>
+      </dialog>
     </main>
     <footer class="site-footer">
       <p><strong>DeckIt.</strong> <span>Desenvolvido por</span> <span class="author">Andreângelo S. Andrade</span> / <a class="repository-link" href="https://github.com/AndreangeloSA/DeckIt">github.com/AndreangeloSA/DeckIt</a></p>
@@ -83,7 +87,7 @@
     </nav>
   </div>
   <script src="js/api.js?v=20261104-shared-preview" defer></script>
-  <script src="js/app.js?v=20261104-create-note-i18n" defer></script>
+  <script src="js/app.js?v=20261113-save-dialog" defer></script>
 </body>
 </html>
 

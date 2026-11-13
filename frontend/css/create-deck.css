@@ -109,3 +109,29 @@
   pointer-events: none;
 }
 
+
+#deck-save-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(22rem, 90vw);
+  box-sizing: border-box;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  text-align: center;
+}
+#deck-save-dialog::backdrop { background: rgb(0 0 0 / 50%); }
+#deck-save-message { margin: 0 0 1rem; font-size: 1.125rem; font-weight: 600; }
+#deck-save-dialog button {
+  min-width: 6rem;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--text);
+  color: var(--surface);
+  font: inherit;
+  cursor: pointer;
+}

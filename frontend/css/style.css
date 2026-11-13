@@ -363,7 +363,6 @@ button[aria-busy="true"]::after {
   height: auto;
 }
 .main .builder-card select, .main .chosen-card button { max-width: 100%; }
-.main .card-quantity { gap: 2px; }
 .main .card-quantity output { min-width: 1ch; }
 
 .main .chosen-card .thumbnail-trigger { width: 100%; height: auto; padding: 0; }

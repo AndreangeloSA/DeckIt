@@ -2,6 +2,7 @@
 .single-deck-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin: 12px 0 24px; }
 .single-deck-heading > span { color: var(--muted); font-size: 14px; white-space: nowrap; }
 .single-deck-grid { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 12px; margin: 0; padding: 0; }
+.single-deck-grid > .empty-decks { grid-column: 1 / -1; }
 .single-deck-grid li { min-width: 0; }
 .single-deck-section-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
 .single-deck-section-bar .deck-section-tabs { flex: 1; min-width: 0; margin: 0; }

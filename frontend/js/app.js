@@ -24,8 +24,9 @@
       "Buscar decks...": "Search decks...", "Nome do deck": "Deck name", "Minha conta": "My account",
       "Seu espaço pessoal no DeckIt.": "Your personal space in DeckIt.", "Membro DeckIt": "DeckIt member",
       "Editar perfil": "Edit profile", "Resumo da coleção": "Collection summary", "Dados da conta": "Account details",
+      "Data de ingresso": "Date joined", "Não foi possível carregar os dados da conta.": "Could not load account details.",
       "E-mail": "Email", "Conta": "Account", "Tema, idioma e preferências": "Theme, language, and preferences",
-      "Sair da conta": "Sign out", "Encerrar sua sessão neste dispositivo": "Sign out on this device",
+      "Deseja sair da conta?": "Sign out of your account?", "Sair da conta": "Sign out", "Encerrar sua sessão neste dispositivo": "Sign out on this device",
       "Os dados exibidos são exemplos visuais e ainda não estão vinculados a uma conta.": "The displayed data is sample content and is not linked to an account yet.",
       "Configurações": "Settings", "Personalize sua experiência no DeckIt.": "Customize your DeckIt experience.",
       "Aparência": "Appearance", "Escolha como o DeckIt aparece para você.": "Choose how DeckIt looks.",
@@ -68,8 +69,9 @@
       "Buscar decks...": "Buscar mazos...", "Nome do deck": "Nombre del mazo", "Minha conta": "Mi cuenta",
       "Seu espaço pessoal no DeckIt.": "Tu espacio personal en DeckIt.", "Membro DeckIt": "Miembro de DeckIt",
       "Editar perfil": "Editar perfil", "Resumo da coleção": "Resumen de la colección", "Dados da conta": "Datos de la cuenta",
+      "Data de ingresso": "Fecha de ingreso", "Não foi possível carregar os dados da conta.": "No se pudieron cargar los datos de la cuenta.",
       "E-mail": "Correo electrónico", "Conta": "Cuenta", "Tema, idioma e preferências": "Tema, idioma y preferencias",
-      "Sair da conta": "Cerrar sesión", "Encerrar sua sessão neste dispositivo": "Cerrar sesión en este dispositivo",
+      "Deseja sair da conta?": "¿Quieres cerrar sesión?", "Sair da conta": "Cerrar sesión", "Encerrar sua sessão neste dispositivo": "Cerrar sesión en este dispositivo",
       "Os dados exibidos são exemplos visuais e ainda não estão vinculados a uma conta.": "Los datos mostrados son ejemplos y todavía no están vinculados a una cuenta.",
       "Configurações": "Ajustes", "Personalize sua experiência no DeckIt.": "Personaliza tu experiencia en DeckIt.",
       "Aparência": "Apariencia", "Escolha como o DeckIt aparece para você.": "Elige cómo se ve DeckIt.",
@@ -106,6 +108,7 @@
     "Entre na sua conta para ver seus decks.": "Sign in to see your decks.",
     "Entre na sua conta para salvar o deck.": "Sign in to save your deck.",
     "Carregando decks…": "Loading decks…",
+    "Carregando cartas…": "Loading cards…",
     "Carregando estatísticas…": "Loading statistics…",
     "Não foi possível carregar os decks.": "Could not load decks.",
     "Entre na sua conta para ver as cartas favoritas.": "Sign in to view your favorite cards.",
@@ -131,6 +134,7 @@
     "Entre na sua conta para ver seus decks.": "Inicia sesión para ver tus mazos.",
     "Entre na sua conta para salvar o deck.": "Inicia sesión para guardar tu mazo.",
     "Carregando decks…": "Cargando mazos…",
+    "Carregando cartas…": "Cargando cartas…",
     "Carregando estatísticas…": "Cargando estadísticas…",
     "Não foi possível carregar os decks.": "No se pudieron cargar los mazos.",
     "Entre na sua conta para ver as cartas favoritas.": "Inicia sesión para ver tus cartas favoritas.",
@@ -427,7 +431,9 @@
     const logout = $("#logout-button");
     let registerMode = false;
 
-    function showState(isAuthenticated) {
+    let accountLoad = 0;
+    async function showState(isAuthenticated) {
+      const load = ++accountLoad;
       panel.hidden = isAuthenticated;
       content.hidden = !isAuthenticated;
       if (isAuthenticated && API?.session?.user) {
@@ -446,6 +452,19 @@
         if (avatar) avatar.textContent = username.slice(0, 2).toLocaleUpperCase();
         const note = $("#account-note");
         if (note) note.hidden = true;
+        const joined = $("#account-date-joined");
+        joined.textContent = "—";
+        try {
+          const info = await API.request("users/general-info/");
+          if (load !== accountLoad) return;
+          profileEmail.textContent = info.email || "";
+          accountEmail.textContent = info.email || "—";
+          joined.textContent = new Intl.DateTimeFormat(currentLanguage, { dateStyle: "long" }).format(new Date(info.date_joined));
+        } catch {
+          if (load !== accountLoad) return;
+          note.textContent = translateValue("Não foi possível carregar os dados da conta.");
+          note.hidden = false;
+        }
       }
     }
     function updateMode() {
@@ -479,7 +498,13 @@
         if (message) { message.textContent = error.message || "Não foi possível entrar."; message.hidden = false; }
       } finally { if (submit) setButtonBusy(submit, false); }
     });
-    if (logout) logout.addEventListener("click", async () => {
+    const logoutDialog = $("#logout-dialog");
+    if (logout && logoutDialog) logout.addEventListener("click", () => {
+      logoutDialog.returnValue = "";
+      logoutDialog.showModal();
+    });
+    if (logoutDialog) logoutDialog.addEventListener("close", async () => {
+      if (logoutDialog.returnValue !== "logout") return;
       setButtonBusy(logout, true);
       try {
         if (API) await API.logout().catch(() => {});
@@ -981,8 +1006,12 @@
               }
             }
           }
-          alert(translateValue(editing ? "Alterações salvas." : "Deck criado com sucesso."));
-          location.href = "deck.html?id=" + encodeURIComponent(saved.id);
+          const dialog = $("#deck-save-dialog");
+          $("#deck-save-message").textContent = translateValue(editing ? "Alterações salvas." : "Deck criado com sucesso.");
+          dialog.addEventListener("close", () => {
+            location.href = "deck.html?id=" + encodeURIComponent(saved.id);
+          }, { once: true });
+          dialog.showModal();
         } catch (error) {
           alert(error.message || "Não foi possível salvar o deck na API.");
           if (submitButton) setButtonBusy(submitButton, false);
@@ -1000,23 +1029,51 @@
     const params = new URLSearchParams(location.search);
     const id = params.get("id");
     if (!id) {
+      $("#deck-loading").hidden = true;
       list.innerHTML = '<li class="empty-decks">Nenhum deck selecionado.</li>';
       return;
     }
-    let deck = decks.find(item => String(item.id) === id) || null;
-    if (apiMode || API?.session) {
-      try {
+    const addButton = $("#edit-deck-button");
+    if (addButton) addButton.onclick = () => {
+      location.href = "create-deck.html?edit=" + encodeURIComponent(id);
+    };
+    const deleteButton = $("#delete-deck-button");
+    if (deleteButton) deleteButton.onclick = async () => {
+      setButtonBusy(deleteButton, true);
+      if (await deleteDeckById(id)) location.href = "decks.html";
+      else setButtonBusy(deleteButton, false);
+    };
+    const sectionTabs = document.querySelectorAll("[data-view-section]");
+    let ready = false;
+    sectionTabs.forEach(tab => {
+      tab.onclick = () => {
+        activeDeckSection = tab.dataset.viewSection;
+        list.dataset.activeSection = activeDeckSection;
+        sectionTabs.forEach(item => {
+          item.setAttribute("aria-selected", String(item === tab));
+          item.tabIndex = item === tab ? 0 : -1;
+        });
+        if (ready) renderSection();
+      };
+    });
+    let deck = decks.find(item => String(item.id) === id);
+    try {
+      if (apiMode || API?.session) {
         deck = await API.getDeck(id);
-        await loadDeckCards(deck);
         decks = decks.map(item => item.id === deck.id ? deck : item);
-      } catch (error) {
-        const errorNode = $(".single-deck-page .empty-decks") || list;
-        if (errorNode) errorNode.textContent = error.message || "Não foi possível carregar este deck.";
-        return;
       }
+      if (!deck) throw new Error("Deck não encontrado.");
+      if (API) await loadDeckCards(deck);
+    } catch (error) {
+      list.replaceChildren();
+      const message = document.createElement("li");
+      message.className = "empty-decks";
+      message.textContent = error.message || "Não foi possível carregar este deck.";
+      list.append(message);
+      return;
+    } finally {
+      $("#deck-loading").hidden = true;
     }
-    if (!deck) return;
-    if (API && !apiMode) await loadDeckCards(deck);
     const heading = $(".single-deck-heading h1");
     const total = $(".single-deck-heading > span");
     if (heading) heading.textContent = deck.name;
@@ -1027,39 +1084,27 @@
     if (descriptionBox) descriptionBox.hidden = !String(deck.description || "").trim();
     const back = $(".single-deck-page .back-link");
     if (back) back.href = "decks.html";
-    const addButton = $("#edit-deck-button");
-    if (addButton) addButton.onclick = () => {
-      location.href = "create-deck.html?edit=" + encodeURIComponent(deck.id);
-    };
-    const deleteButton = $("#delete-deck-button");
-    if (deleteButton) deleteButton.onclick = async () => {
-      setButtonBusy(deleteButton, true);
-      if (await deleteDeckById(deck.id)) location.href = "decks.html";
-      else setButtonBusy(deleteButton, false);
-    };
-    const sectionCards = (deck.cards || []).filter(item => (item.section || "main") === activeDeckSection);
-    const sectionCount = sectionCards.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
-    const sectionCountOutput = $("#deck-section-count");
-    if (sectionCountOutput) sectionCountOutput.textContent = sectionCount + " cartas";
-    const sectionTabs = document.querySelectorAll("[data-view-section]");
-    sectionTabs.forEach(tab => {
-      const selected = tab.dataset.viewSection === activeDeckSection;
-      tab.setAttribute("aria-selected", String(selected));
-      tab.tabIndex = selected ? 0 : -1;
-    });
-    list.dataset.activeSection = activeDeckSection;
-    list.innerHTML = sectionCards.map(item => {
-      const card = getCard(item.id);
-      if (!card) return "";
-      const quantity = Math.max(1, Number(item.quantity) || 1);
-      const copiesAcrossSections = (deck.cards || []).filter(entry => String(entry.id) === String(item.id)).reduce((sum, entry) => sum + (Number(entry.quantity) || 0), 0);
-      const thumbnail = card.small_image_url || card.thumbnail;
-      const fallback = thumbnail ? ' onerror="this.onerror=null;this.src=\'' + escapeHtml(card.image) + '\'"' : '';
-      const art = thumbnail ? '<img src="' + escapeHtml(thumbnail) + '"' + fallback + ' alt="' + escapeHtml(card.name) + '" width="421" height="614" loading="lazy" decoding="async">' : '<span class="card-thumbnail-placeholder" aria-hidden="true">◇</span>';
-      return '<li><figure class="deck-card" data-card-id="' + card.id + '"><button class="card-preview-button" type="button" data-preview-card="' + card.id + '" aria-haspopup="dialog">' + art + thumbnailName(card.name) +
-        '</button><div class="card-quantity" aria-label="Quantidade: ' + quantity + '"><button type="button" data-action="decrease" aria-label="Remover uma cópia">−</button>' +
-        '<output data-quantity>' + quantity + '</output><button type="button" data-action="increase" aria-label="Adicionar uma cópia"' + (copiesAcrossSections >= 3 ? ' disabled title="Limite de 3 cópias atingido"' : '') + '>+</button></div></figure></li>';
-    }).join("") || '<li class="empty-decks">Este deck ainda não tem cartas.</li>';
+    function renderSection() {
+      const sectionCards = (deck.cards || []).filter(item => (item.section || "main") === activeDeckSection);
+      const sectionCount = sectionCards.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+      const sectionCountOutput = $("#deck-section-count");
+      if (sectionCountOutput) sectionCountOutput.textContent = sectionCount + " cartas";
+      list.innerHTML = sectionCards.map(item => {
+        const card = getCard(item.id);
+        if (!card) return "";
+        const quantity = Math.max(1, Number(item.quantity) || 1);
+        const copiesAcrossSections = (deck.cards || []).filter(entry => String(entry.id) === String(item.id)).reduce((sum, entry) => sum + (Number(entry.quantity) || 0), 0);
+        const thumbnail = card.small_image_url || card.thumbnail;
+        const fallback = thumbnail ? ' onerror="this.onerror=null;this.src=\'' + escapeHtml(card.image) + '\'"' : '';
+        const art = thumbnail ? '<img src="' + escapeHtml(thumbnail) + '"' + fallback + ' alt="' + escapeHtml(card.name) + '" width="421" height="614" loading="lazy" decoding="async">' : '<span class="card-thumbnail-placeholder" aria-hidden="true">◇</span>';
+        return '<li><figure class="deck-card" data-card-id="' + card.id + '"><button class="card-preview-button" type="button" data-preview-card="' + card.id + '" aria-haspopup="dialog">' + art + thumbnailName(card.name) +
+          '</button><div class="card-quantity" aria-label="Quantidade: ' + quantity + '"><button type="button" data-action="decrease" aria-label="Remover uma cópia">−</button>' +
+          '<output data-quantity>' + quantity + '</output><button type="button" data-action="increase" aria-label="Adicionar uma cópia"' + (copiesAcrossSections >= 3 ? ' disabled title="Limite de 3 cópias atingido"' : '') + '>+</button></div></figure></li>';
+      }).join("") || '<li class="empty-decks">Este deck ainda não tem cartas.</li>';
+      applyLanguage();
+    }
+    ready = true;
+    renderSection();
 
     list.onclick = async event => {
       const button = event.target.closest("[data-action]");
@@ -1088,13 +1133,6 @@
       saveDecks();
       renderDeckPage();
     };
-    document.querySelectorAll("[data-view-section]").forEach(tab => {
-      tab.onclick = () => {
-        list.dataset.activeSection = tab.dataset.viewSection;
-        renderDeckPage();
-      };
-    });
-    applyLanguage();
   }
 
   function initSettings() {

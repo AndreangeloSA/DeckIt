@@ -57,17 +57,11 @@ class UserGeneralInfo(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
+        return Response({
+            "email": request.user.email,
+            "date_joined": request.user.date_joined,
+        })
 
-        user = get_object_or_404(User, id=request.user.id)
-        email = user.objects.get(email=request.user.email)
-        date_joined = user.objects.get(date_joined = request.user.date_joined)
-
-        data = {
-            "email": email,
-            "date_joined": date_joined
-        }
-
-        return data
 
 def send_password_reset_email(user, reset_link):
 
