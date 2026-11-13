@@ -34,6 +34,25 @@ DJANGO_ENV = os.getenv('DJANGO_ENV')
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
 
+############ FRONTEND URL #############
+
+frontend_url = "https//deckit.pages.dev"
+
+############# EMAIL #################
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+
+BREVO_API_KEY = os.getenv("BREVO_API_KEY")
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -81,7 +100,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-##TESTS AND MIGRATIONS PROTECTIONS
+################ TESTS AND MIGRATIONS PROTECTIONS ##########################
 
 RUNNING_TESTS = "test" in sys.argv
 RUNNING_MIGRATIONS = "migrate" in sys.argv
@@ -89,7 +108,8 @@ ALLOW_REMOTE_MIGRATIONS = (
     os.getenv('ALLOWED_REMOTE_MIGRATIONS', 'false').lower() == "true"
 )
 
-# Database
+###################### Database ########################################
+
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 if RUNNING_TESTS or (RUNNING_MIGRATIONS and not ALLOW_REMOTE_MIGRATIONS):
     DB_PREFIX = 'LOCAL_'
@@ -117,7 +137,8 @@ REST_FRAMEWORK = {
     )
 }
 
-# Password validation
+######################## Password validation ################################
+
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -135,10 +156,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-#SIMPLEJWT
+################### SIMPLEJWT #############################
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20)
 }
 
 # Internationalization
@@ -167,11 +188,13 @@ STORAGES = {
     },
 }
 
-# Render
+#################### Render ###########################
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-#CORS
-
+#################### CORS ###############################
 CORS_ALLOWED_ORIGINS = [
     "https://deckit.pages.dev",
 ]
+
+################# PASSWORD RESET CONFIG ###################
+PASSWORD_RESET_TIMEOUT = 3600
