@@ -368,3 +368,30 @@ button[aria-busy="true"]::after {
 .main .chosen-card .thumbnail-trigger { width: 100%; height: auto; padding: 0; }
 .main .chosen-card .thumbnail-trigger img { display: block; width: 100%; height: auto; aspect-ratio: 421 / 614; border-radius: 5px; }
 .deck > .deck-link { display: flex; align-items: center; flex: 1; gap: 12px; min-width: 0; align-self: stretch; }
+
+.confirmation-dialog {
+  inset: 0;
+  margin: auto;
+  box-sizing: border-box;
+  width: min(23rem, 90vw);
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  text-align: center;
+}
+.confirmation-dialog::backdrop { background: rgb(0 0 0 / 50%); }
+.confirmation-dialog h2 { margin: 0 0 1rem; font-size: 1.125rem; }
+.confirmation-dialog form { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; }
+.confirmation-dialog button {
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+.confirmation-dialog button.confirm-action { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }

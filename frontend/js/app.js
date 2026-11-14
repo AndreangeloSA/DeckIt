@@ -108,7 +108,23 @@
     "Entre na sua conta para ver seus decks.": "Sign in to see your decks.",
     "Entre na sua conta para salvar o deck.": "Sign in to save your deck.",
     "Carregando decks…": "Loading decks…",
+    "Salvar": "Save",
     "Carregando cartas…": "Loading cards…",
+    "Esqueci minha senha": "Forgot my password",
+    "Informe o e-mail que você usou para criar sua conta.": "Enter the email you used to create your account.",
+    "Enviar link": "Send link",
+    "Voltar ao login": "Back to sign in",
+    "Redefinir senha": "Reset password",
+    "Digite e confirme sua nova senha.": "Enter and confirm your new password.",
+    "Nova senha": "New password",
+    "Confirme a nova senha": "Confirm new password",
+    "Solicitar outro link": "Request another link",
+    "Link incompleto. Solicite outro link.": "Incomplete link. Request another link.",
+    "As senhas precisam ser iguais.": "Passwords must match.",
+    "Enviando…": "Sending…",
+    "Se houver uma conta com esse e-mail, você receberá um link para redefinir a senha.": "If an account uses this email, you will receive a password reset link.",
+    "Link inválido ou expirado. Solicite outro link.": "Invalid or expired link. Request another link.",
+    "Não foi possível enviar a solicitação.": "Could not send the request.",
     "Carregando estatísticas…": "Loading statistics…",
     "Não foi possível carregar os decks.": "Could not load decks.",
     "Entre na sua conta para ver as cartas favoritas.": "Sign in to view your favorite cards.",
@@ -134,7 +150,23 @@
     "Entre na sua conta para ver seus decks.": "Inicia sesión para ver tus mazos.",
     "Entre na sua conta para salvar o deck.": "Inicia sesión para guardar tu mazo.",
     "Carregando decks…": "Cargando mazos…",
+    "Salvar": "Guardar",
     "Carregando cartas…": "Cargando cartas…",
+    "Esqueci minha senha": "Olvidé mi contraseña",
+    "Informe o e-mail que você usou para criar sua conta.": "Introduce el correo que usaste para crear tu cuenta.",
+    "Enviar link": "Enviar enlace",
+    "Voltar ao login": "Volver al inicio de sesión",
+    "Redefinir senha": "Restablecer contraseña",
+    "Digite e confirme sua nova senha.": "Introduce y confirma tu nueva contraseña.",
+    "Nova senha": "Nueva contraseña",
+    "Confirme a nova senha": "Confirma la nueva contraseña",
+    "Solicitar outro link": "Solicitar otro enlace",
+    "Link incompleto. Solicite outro link.": "Enlace incompleto. Solicita otro enlace.",
+    "As senhas precisam ser iguais.": "Las contraseñas deben coincidir.",
+    "Enviando…": "Enviando…",
+    "Se houver uma conta com esse e-mail, você receberá um link para redefinir a senha.": "Si hay una cuenta con este correo, recibirás un enlace para restablecer la contraseña.",
+    "Link inválido ou expirado. Solicite outro link.": "Enlace no válido o caducado. Solicita otro enlace.",
+    "Não foi possível enviar a solicitação.": "No se pudo enviar la solicitud.",
     "Carregando estatísticas…": "Cargando estadísticas…",
     "Não foi possível carregar os decks.": "No se pudieron cargar los mazos.",
     "Entre na sua conta para ver as cartas favoritas.": "Inicia sesión para ver tus cartas favoritas.",
@@ -395,25 +427,62 @@
       return;
     }
     const id = String(cardId);
-    const wasFavorite = favoriteIds.has(id);
-    try {
-      if (favoriteIds.has(id)) {
-        await API.removeFavorite(id);
-        favoriteIds.delete(id);
-      } else {
-        await API.addFavorite(id);
-        favoriteIds.add(id);
-      }
-      const result = await API.getFavorites();
-      favoritesLoaded = true;
-      window.__deckitFavoriteCount = result.favorite_card_count || 0;
-      favoriteIds = new Set((result.cards || []).map(item => String(item.card)));
-    } catch (error) {
-      if (wasFavorite) favoriteIds.add(id); else favoriteIds.delete(id);
-      window.__deckitFavoriteCount = favoriteIds.size;
-      throw error;
+    if (favoriteIds.has(id)) {
+      await API.removeFavorite(id);
+      favoriteIds.delete(id);
+    } else {
+      await API.addFavorite(id);
+      favoriteIds.add(id);
     }
+    window.__deckitFavoriteCount = favoriteIds.size;
     updateAccountStats();
+  }
+
+  function setupPasswordRecovery() {
+    const form = $("#forgot-form") || $("#reset-form");
+    if (!form) return;
+    const resetting = form.id === "reset-form";
+    const button = $("button[type=submit]", form);
+    const message = $(".auth-message", form);
+    const params = new URLSearchParams(location.search);
+    const uid = params.get("uid");
+    const token = params.get("token");
+    if (resetting && (!uid || !token)) {
+      button.disabled = true;
+      message.textContent = translateValue("Link incompleto. Solicite outro link.");
+      return;
+    }
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      if (button.disabled) return;
+      if (resetting && form.elements.new_password.value !== form.elements.confirmation.value) {
+        message.textContent = translateValue("As senhas precisam ser iguais.");
+        form.elements.confirmation.focus();
+        return;
+      }
+      setButtonBusy(button, true);
+      message.textContent = translateValue("Enviando…");
+      try {
+        const options = { method: "POST", noAuth: true, noRefresh: true };
+        if (resetting) {
+          await API.request("users/password-reset/", {
+            ...options, body: { uid, token, new_password: form.elements.new_password.value }
+          });
+          location.replace("account.html");
+        } else {
+          await API.request("users/password-request/", {
+            ...options, body: { email: form.elements.email.value.trim() }
+          });
+          message.textContent = translateValue("Se houver uma conta com esse e-mail, você receberá um link para redefinir a senha.");
+        }
+      } catch (error) {
+        message.textContent = translateValue(error.message === "invalid token"
+          ? "Link inválido ou expirado. Solicite outro link."
+          : error.message || "Não foi possível enviar a solicitação.");
+      } finally {
+        setButtonBusy(button, false);
+      }
+    });
   }
 
   function setupAccountAuth() {
@@ -442,11 +511,9 @@
         const email = user.email || "";
         const profileName = $("#profile-name");
         const accountName = $("#account-name");
-        const profileEmail = $("#profile-email");
         const accountEmail = $("#account-email");
         if (profileName) profileName.textContent = username;
         if (accountName) accountName.textContent = username;
-        if (profileEmail) profileEmail.textContent = email;
         if (accountEmail) accountEmail.textContent = email || "—";
         const avatar = $(".avatar");
         if (avatar) avatar.textContent = username.slice(0, 2).toLocaleUpperCase();
@@ -457,7 +524,6 @@
         try {
           const info = await API.request("users/general-info/");
           if (load !== accountLoad) return;
-          profileEmail.textContent = info.email || "";
           accountEmail.textContent = info.email || "—";
           joined.textContent = new Intl.DateTimeFormat(currentLanguage, { dateStyle: "long" }).format(new Date(info.date_joined));
         } catch {
@@ -474,6 +540,7 @@
       if (toggle) toggle.textContent = registerMode ? "Já tenho uma conta" : "Criar conta";
       if (emailRow) emailRow.hidden = !registerMode;
       if (emailInput) emailInput.required = registerMode;
+      $("#reset-password-link").hidden = registerMode;
     }
     updateMode();
     showState(Boolean(API?.session));
@@ -492,7 +559,7 @@
         const loaded = await loadPageApiData();
         if (!loaded) throw new Error("A conta foi autenticada, mas não foi possível carregar seus dados.");
         showState(true);
-        alert(translateValue(registerMode ? "Conta criada com sucesso." : "Login realizado com sucesso."));
+        await showNotice(registerMode ? "Conta criada com sucesso." : "Login realizado com sucesso.");
         renderHome(); renderDeckList(); updateAccountStats();
       } catch (error) {
         if (message) { message.textContent = error.message || "Não foi possível entrar."; message.hidden = false; }
@@ -541,29 +608,56 @@
 
   let decks = [];
 
-  function saveDecks() {
+  async function showNotice(message) {
+    const dialog = document.createElement("dialog");
+    dialog.className = "confirmation-dialog";
+    dialog.setAttribute("role", "alertdialog");
+    const title = document.createElement("h2");
+    title.textContent = translateValue(message);
+    dialog.setAttribute("aria-label", title.textContent);
+    const form = document.createElement("form");
+    form.method = "dialog";
+    const ok = document.createElement("button");
+    ok.type = "submit";
+    ok.className = "confirm-action";
+    ok.autofocus = true;
+    ok.textContent = "OK";
+    form.append(ok);
+    dialog.append(title, form);
+    document.body.append(dialog);
+    dialog.showModal();
+    await new Promise(resolve => dialog.addEventListener("close", resolve, { once: true }));
+    dialog.remove();
+  }
+
+  async function saveDecks() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(decks));
       return true;
     } catch (error) {
-      alert(translateValue("Não foi possível salvar os decks neste navegador."));
+      await showNotice("Não foi possível salvar os decks neste navegador.");
       return false;
     }
   }
 
-  async function deleteDeckById(id) {
-    if (!confirm(translateValue("Tem certeza de que deseja excluir este deck?"))) return false;
+  async function deleteDeckById(id, button) {
+    const dialog = $("#delete-deck-dialog");
+    dialog.returnValue = "";
+    dialog.showModal();
+    await new Promise(resolve => dialog.addEventListener("close", resolve, { once: true }));
+    if (dialog.returnValue !== "delete") return false;
+    setButtonBusy(button, true);
     try {
       if (apiMode) await API.deleteDeck(id);
       decks = decks.filter(deck => String(deck.id) !== String(id));
-      if (!apiMode && !saveDecks()) { decks = loadDecks(); return false; }
-      alert(translateValue("Deck excluído com sucesso."));
+      if (!apiMode && !(await saveDecks())) { decks = loadDecks(); return false; }
+      await showNotice("Deck excluído com sucesso.");
       updateAccountStats();
       renderHome();
       renderDeckList();
       return true;
     } catch (error) {
-      alert(error.message || "Não foi possível excluir o deck.");
+      await showNotice(error.message || "Não foi possível excluir o deck.");
       return false;
     }
   }
@@ -670,7 +764,7 @@
     if (count) count.textContent = decks.length + (decks.length === 1 ? " deck" : " decks");
     list.innerHTML = visible.map(deck => {
       const first = getCard(deck.cards[0] && deck.cards[0].id);
-      return '<li><article class="collection-deck"><button class="delete-deck-icon" type="button" data-delete-deck="' + escapeHtml(deck.id) + '" aria-label="Excluir deck" title="Excluir deck">×</button><div class="deck-cover">' + deckCoverImage(first) + '</div><div class="collection-info"><h3>' + escapeHtml(deck.name) +
+      return '<li><article class="collection-deck"><button class="delete-deck-icon" aria-haspopup="dialog" aria-controls="delete-deck-dialog" type="button" data-delete-deck="' + escapeHtml(deck.id) + '" aria-label="Excluir deck" title="Excluir deck">×</button><div class="deck-cover">' + deckCoverImage(first) + '</div><div class="collection-info"><h3>' + escapeHtml(deck.name) +
         '</h3><p>' + totalCards(deck) + ' cartas</p><a class="open-deck" href="deck.html?id=' +
         encodeURIComponent(deck.id) + '">Abrir deck</a></div></article></li>';
     }).join("") || '<li class="empty-decks">' + (decks.length ? 'Nenhum deck encontrado.' : 'Você ainda não criou decks.') + '</li>';
@@ -679,8 +773,7 @@
       if (!button) return;
       event.preventDefault();
       event.stopPropagation();
-      setButtonBusy(button, true);
-      if (!await deleteDeckById(button.getAttribute("data-delete-deck"))) setButtonBusy(button, false);
+      if (!await deleteDeckById(button.getAttribute("data-delete-deck"), button)) setButtonBusy(button, false);
     };
     applyLanguage();
   }
@@ -692,9 +785,10 @@
   }
 
   function resultCardMarkup(card, includeAddButton) {
+    const isFavorite = favoriteIds.has(String(card.id));
     const action = includeAddButton
       ? '<div class="card-add-controls"><label>Qtd.<select data-add-quantity><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></label><button type="button" data-add-card="' + card.id + '">Adicionar ao deck</button></div>'
-      : '<button class="favorite-card-button" type="button" data-favorite-card="' + card.id + '" aria-pressed="' + favoriteIds.has(card.id) + '">' + (favoriteIds.has(card.id) ? '♥' : '♡') + '</button>';
+      : '<button class="favorite-card-button" type="button" data-favorite-card="' + card.id + '" aria-pressed="' + isFavorite + '">' + (isFavorite ? '♥' : '♡') + '</button>';
     const thumbnail = card.small_image_url || card.thumbnail;
     const image = thumbnail ? '<img src="' + escapeHtml(thumbnail) + '" alt="" width="421" height="614" loading="lazy" decoding="async">' : '<span class="card-thumbnail-placeholder" aria-hidden="true">◇</span>';
     const preview = '<button class="card-preview-button" type="button" data-preview-card="' + escapeHtml(card.id) + '" aria-haspopup="dialog" aria-label="' + escapeHtml(card.name) + '">' + image + thumbnailName(card.name) + '</button>';
@@ -704,6 +798,11 @@
   async function favoriteCards(section) {
     const result = await API.getFavorites({ deck_section: section });
     const ids = (result.cards || []).map(item => String(item.card));
+    if (!section) {
+      favoriteIds = new Set(ids);
+      favoritesLoaded = true;
+      window.__deckitFavoriteCount = favoriteIds.size;
+    }
     const results = [];
     for (let offset = 0; offset < ids.length; offset += 8) {
       const batch = await Promise.all(ids.slice(offset, offset + 8).map(id => API.cardById(id)));
@@ -902,7 +1001,7 @@
     const favoritesButton = $("#builder-favorites");
     favoritesButton.addEventListener("click", async () => {
       if (!API?.session) {
-        alert(translateValue("Entre na sua conta para ver as cartas favoritas."));
+        await showNotice("Entre na sua conta para ver as cartas favoritas.");
         return;
       }
       clearTimeout(builderSearchTimer);
@@ -975,7 +1074,7 @@
         return;
       }
       if (!selected.size) {
-        alert(translateValue("Adicione pelo menos uma carta ao deck."));
+        await showNotice("Adicione pelo menos uma carta ao deck.");
         return;
       }
       const now = Date.now();
@@ -1013,12 +1112,12 @@
           }, { once: true });
           dialog.showModal();
         } catch (error) {
-          alert(error.message || "Não foi possível salvar o deck na API.");
+          await showNotice(error.message || "Não foi possível salvar o deck na API.");
           if (submitButton) setButtonBusy(submitButton, false);
         }
         return;
       }
-      alert(translateValue("Entre na sua conta para salvar o deck."));
+      await showNotice("Entre na sua conta para salvar o deck.");
     });
   }
 
@@ -1039,8 +1138,7 @@
     };
     const deleteButton = $("#delete-deck-button");
     if (deleteButton) deleteButton.onclick = async () => {
-      setButtonBusy(deleteButton, true);
-      if (await deleteDeckById(id)) location.href = "decks.html";
+      if (await deleteDeckById(id, deleteButton)) location.href = "decks.html";
       else setButtonBusy(deleteButton, false);
     };
     const sectionTabs = document.querySelectorAll("[data-view-section]");
@@ -1121,7 +1219,7 @@
           if (button.dataset.action === "increase") await API.addCard({ deck: deck.id, card: cardId, card_quantity: 1, section: entry.section || "main" });
           else await API.removeCard({ deck: deck.id, card: cardId, card_quantity: 1, section: entry.section || "main" });
           await renderDeckPage();
-        } catch (error) { alert(error.message || "Não foi possível atualizar a quantidade."); setButtonBusy(button, false); }
+        } catch (error) { await showNotice(error.message || "Não foi possível atualizar a quantidade."); setButtonBusy(button, false); }
         return;
       }
       if (button.dataset.action === "increase") entry.quantity = Number(entry.quantity || 0) + 1;
@@ -1130,7 +1228,7 @@
         if (entry.quantity <= 0) deck.cards = deck.cards.filter(card => !(String(card.id) === cardId && (card.section || "main") === (entry.section || "main")));
       }
       deck.updatedAt = Date.now();
-      saveDecks();
+      await saveDecks();
       renderDeckPage();
     };
   }
@@ -1179,11 +1277,12 @@
       if (!button || button.getAttribute("aria-busy") === "true") return;
       button.setAttribute("aria-busy", "true");
       try { await openCardPreview(button.dataset.previewCard); }
-      catch (error) { alert(error.message || "Não foi possível carregar os detalhes da carta."); }
+      catch (error) { await showNotice(error.message || "Não foi possível carregar os detalhes da carta."); }
       finally { button.removeAttribute("aria-busy"); }
     });
     renderFavoritesPage();
     setupAccountAuth();
+    setupPasswordRecovery();
     if (!API?.session) {
       if ($("#deck-card-list") || ($("#create-deck-form") && new URLSearchParams(location.search).has("edit"))) {
         location.replace("account.html");
@@ -1227,22 +1326,55 @@
       if (input && params.has("q")) input.value = params.get("q") || "";
       if (input && (input.value || Array.from(params.keys()).some(key => key !== "q"))) renderSearchResults(input.value, results, false, searchForm);
     }
-    const favoriteGrid = $("#favorite-results") || $("#search-results");
-    if (favoriteGrid) favoriteGrid.addEventListener("click", async event => {
-        const favoriteButton = event.target.closest("[data-favorite-card]");
-        if (!favoriteButton) return;
-        setButtonBusy(favoriteButton, true);
-        try {
-          await toggleFavorite(favoriteButton.getAttribute("data-favorite-card"));
-          if (favoriteGrid.id === "favorite-results" && !favoriteIds.has(favoriteButton.dataset.favoriteCard)) {
-            favoriteButton.closest("li").remove();
-            if (!favoriteGrid.children.length) $("#favorites-status").textContent = translateValue("Nenhuma carta favorita.");
-          }
-          favoriteButton.setAttribute("aria-pressed", String(favoriteIds.has(favoriteButton.getAttribute("data-favorite-card"))));
-          favoriteButton.textContent = favoriteIds.has(favoriteButton.getAttribute("data-favorite-card")) ? "♥" : "♡";
-        } catch (error) { alert(error.message || "Não foi possível atualizar os favoritos."); }
-        finally { setButtonBusy(favoriteButton, false); }
+    const favoriteList = $("#favorite-results");
+    if (favoriteList) {
+      const save = $("#save-favorites");
+      const pending = new Map();
+      favoriteList.addEventListener("click", event => {
+        const button = event.target.closest("[data-favorite-card]");
+        if (!button || favoriteList.inert) return;
+        const id = button.dataset.favoriteCard;
+        if (pending.has(id)) pending.delete(id);
+        else pending.set(id, button);
+        button.setAttribute("aria-pressed", String(!pending.has(id)));
+        button.textContent = pending.has(id) ? "♡" : "♥";
+        save.disabled = pending.size === 0;
       });
+      save.addEventListener("click", async () => {
+        if (save.disabled) return;
+        setButtonBusy(save, true);
+        favoriteList.inert = true;
+        try {
+          for (const [id, button] of pending) {
+            await API.removeFavorite(id);
+            favoriteIds.delete(id);
+            window.__deckitFavoriteCount = favoriteIds.size;
+            pending.delete(id);
+            button.closest("li").remove();
+          }
+          if (!favoriteList.children.length) $("#favorites-status").textContent = translateValue("Nenhuma carta favorita.");
+        } catch (error) {
+          await showNotice(error.message || "Não foi possível atualizar os favoritos.");
+        } finally {
+          favoriteList.inert = false;
+          setButtonBusy(save, false);
+          save.disabled = pending.size === 0;
+        }
+      });
+    }
+    const searchResults = $("#search-results");
+    if (searchResults) searchResults.addEventListener("click", async event => {
+      const button = event.target.closest("[data-favorite-card]");
+      if (!button) return;
+      setButtonBusy(button, true);
+      try {
+        await toggleFavorite(button.dataset.favoriteCard);
+        const selected = favoriteIds.has(button.dataset.favoriteCard);
+        button.setAttribute("aria-pressed", String(selected));
+        button.textContent = selected ? "♥" : "♡";
+      } catch (error) { await showNotice(error.message || "Não foi possível atualizar os favoritos."); }
+      finally { setButtonBusy(button, false); }
+    });
     document.querySelectorAll(".card-search-filter[aria-controls]").forEach(button => {
       const panel = document.getElementById(button.getAttribute("aria-controls"));
       function setOpen(open) {

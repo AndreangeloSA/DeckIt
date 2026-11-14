@@ -17,7 +17,7 @@
   <meta name="deckit-api-base" content="https://deckit-api.onrender.com/api/">
   <link rel="icon" type="image/png" sizes="48x48" href="assets/logo/favicon.png">
   <title>DeckIt — Deck</title>
-  <link rel="stylesheet" href="css/style.css?v=20261113-deck-spacing">
+  <link rel="stylesheet" href="css/style.css?v=20261113-app-notices">
   <link rel="stylesheet" href="css/decks.css">
   <link rel="stylesheet" href="css/single-deck.css?v=20261113-deck-empty">
   <link rel="stylesheet" href="css/i18n-layout.css">
@@ -45,7 +45,7 @@
         <button id="edit-deck-button" class="add-card-button edit-deck-button" type="button">
           Editar deck
         </button>
-        <button id="delete-deck-button" class="delete-deck-button" type="button" aria-label="Excluir deck" title="Excluir deck">Excluir deck</button>
+        <button id="delete-deck-button" aria-haspopup="dialog" aria-controls="delete-deck-dialog" class="delete-deck-button" type="button" aria-label="Excluir deck" title="Excluir deck">Excluir deck</button>
       </div>
       <section class="single-deck-cards" aria-label="Cartas do deck">
         <div class="single-deck-section-bar">
@@ -59,6 +59,13 @@
         <p id="deck-loading" role="status"><span class="collection-spinner" aria-hidden="true"></span> <span>Carregando cartas…</span></p>
         <ul id="deck-card-list" class="single-deck-grid"></ul>
       </section>
+      <dialog class="confirmation-dialog" id="delete-deck-dialog" aria-labelledby="delete-deck-question">
+        <h2 id="delete-deck-question">Tem certeza de que deseja excluir este deck?</h2>
+        <form method="dialog">
+          <button type="submit" value="cancel" autofocus>Cancelar</button>
+          <button class="confirm-action" type="submit" value="delete">Excluir deck</button>
+        </form>
+      </dialog>
     </main>
     <footer class="site-footer">
       <p><strong>DeckIt.</strong> <span>Desenvolvido por</span> <span class="author">Andreângelo S. Andrade</span> / <a class="repository-link" href="https://github.com/AndreangeloSA/DeckIt">github.com/AndreangeloSA/DeckIt</a></p>
@@ -73,7 +80,7 @@
     </nav>
   </div>
   <script src="js/api.js?v=20261104-shared-preview" defer></script>
-  <script src="js/app.js?v=20261113-deck-loading" defer></script>
+  <script src="js/app.js?v=20261113-app-notices" defer></script>
 </body>
 </html>
 

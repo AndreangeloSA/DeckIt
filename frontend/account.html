@@ -17,8 +17,8 @@
   <meta name="deckit-api-base" content="https://deckit-api.onrender.com/api/">
   <link rel="icon" type="image/png" sizes="48x48" href="assets/logo/favicon.png">
   <title>DeckIt — Minha conta</title>
-  <link rel="stylesheet" href="css/style.css?v=20261104-full-theme">
-  <link rel="stylesheet" href="css/account.css?v=20261113-logout">
+  <link rel="stylesheet" href="css/style.css?v=20261113-app-notices">
+  <link rel="stylesheet" href="css/account.css?v=20261113-password-recovery">
   <link rel="stylesheet" href="css/i18n-layout.css">
 </head>
 <body>
@@ -49,6 +49,7 @@
           <div class="auth-actions">
             <button id="auth-submit" class="create-button" type="submit">Entrar</button>
             <button id="auth-mode-toggle" class="auth-mode-toggle" type="button">Criar conta</button>
+            <a id="reset-password-link" href="forgot-password.html">Esqueci minha senha</a>
           </div>
         </form>
       </section>
@@ -56,7 +57,6 @@
         <div class="avatar" aria-hidden="true">AS</div>
         <div class="profile-copy">
           <h2 id="profile-name">Andreângelo S. Andrade</h2>
-          <p id="profile-email"></p>
           <span class="member-label">Membro DeckIt</span>
         </div>
         <!--<button class="edit-profile" type="button" aria-disabled="true">Editar perfil</button>-->
@@ -74,7 +74,6 @@
           <div><dt>Nome</dt><dd id="account-name">Andreângelo S. Andrade</dd></div>
           <div><dt>E-mail</dt><dd id="account-email">—</dd></div>
           <div><dt>Data de ingresso</dt><dd id="account-date-joined">—</dd></div>
-          <div><dt>Idioma</dt><dd>Português (Brasil)</dd></div>
         </dl>
       </section>
       <section class="account-section" aria-labelledby="account-actions-title">
@@ -84,11 +83,11 @@
       </section>
       <p class="account-note" id="account-note">Os dados exibidos são exemplos visuais e ainda não estão vinculados a uma conta.</p>
       </div>
-      <dialog id="logout-dialog" aria-labelledby="logout-question">
+      <dialog class="confirmation-dialog" id="logout-dialog" aria-labelledby="logout-question">
         <h2 id="logout-question">Deseja sair da conta?</h2>
         <form method="dialog">
           <button type="submit" value="cancel" autofocus>Cancelar</button>
-          <button type="submit" value="logout">Sair da conta</button>
+          <button class="confirm-action" type="submit" value="logout">Sair da conta</button>
         </form>
       </dialog>
     </main>
@@ -105,6 +104,6 @@
     </nav>
   </div>
   <script src="js/api.js?v=20261103-persistent-cache" defer></script>
-  <script src="js/app.js?v=20261113-account-info" defer></script>
+  <script src="js/app.js?v=20261113-account-fields" defer></script>
 </body>
 </html>

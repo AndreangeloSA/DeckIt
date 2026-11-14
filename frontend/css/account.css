@@ -56,29 +56,12 @@
   .account-stats .stat-card { aspect-ratio: 5 / 3; }
 }
 
-#logout-dialog {
-  inset: 0;
-  margin: auto;
-  box-sizing: border-box;
-  width: min(23rem, 90vw);
-  padding: 1.5rem;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: var(--surface);
-  color: var(--text);
-  text-align: center;
+
+
+#reset-password-link {
+  justify-self: end;
+  align-self: flex-end;
+  margin-inline-start: auto;
+  margin-bottom: 10px;
+  color: var(--accent);
 }
-#logout-dialog::backdrop { background: rgb(0 0 0 / 50%); }
-#logout-question { margin: 0 0 1rem; font-size: 1.125rem; }
-#logout-dialog form { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; }
-#logout-dialog button {
-  min-height: 44px;
-  padding: 8px 16px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--surface);
-  color: var(--text);
-  font: inherit;
-  cursor: pointer;
-}
-#logout-dialog button[value="logout"] { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }

@@ -33,3 +33,7 @@
 
 .card-search-form > button.card-search-filter:hover { width: 44px; min-width: 44px; height: 44px; min-height: 44px; border-radius: 9px; background: color-mix(in srgb, var(--border) 35%, transparent) !important; transition: background-color 160ms ease; }
 
+
+.favorites-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+#save-favorites { min-height: 44px; padding: 8px 16px; }
+#save-favorites:disabled { opacity: .55; }

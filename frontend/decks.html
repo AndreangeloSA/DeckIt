@@ -17,7 +17,7 @@
   <meta name="deckit-api-base" content="https://deckit-api.onrender.com/api/">
   <link rel="icon" type="image/png" sizes="48x48" href="assets/logo/favicon.png">
   <title>DeckIt — Minha coleção</title>
-  <link rel="stylesheet" href="css/style.css?v=20261104-full-theme">
+  <link rel="stylesheet" href="css/style.css?v=20261113-app-notices">
   <link rel="stylesheet" href="css/decks.css">
   <link rel="stylesheet" href="css/i18n-layout.css">
 </head>
@@ -52,6 +52,13 @@
         <ul id="user-decks" class="decks-grid" aria-label="Meus decks"></ul>
 </section>
 
+      <dialog class="confirmation-dialog" id="delete-deck-dialog" aria-labelledby="delete-deck-question">
+        <h2 id="delete-deck-question">Tem certeza de que deseja excluir este deck?</h2>
+        <form method="dialog">
+          <button type="submit" value="cancel" autofocus>Cancelar</button>
+          <button class="confirm-action" type="submit" value="delete">Excluir deck</button>
+        </form>
+      </dialog>
     </main>
     <footer class="site-footer">
       <p><strong>DeckIt.</strong> <span>Desenvolvido por</span> <span class="author">Andreângelo S. Andrade</span> / <a class="repository-link" href="https://github.com/AndreangeloSA/DeckIt">github.com/AndreangeloSA/DeckIt</a></p>
@@ -66,6 +73,6 @@
     </nav>
   </div>
   <script src="js/api.js?v=20261103-persistent-cache" defer></script>
-  <script src="js/app.js?v=20261103-collection-edit-labels" defer></script>
+  <script src="js/app.js?v=20261113-app-notices" defer></script>
 </body>
 </html>

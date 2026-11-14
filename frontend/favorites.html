@@ -17,8 +17,8 @@
   <meta name="deckit-api-base" content="https://deckit-api.onrender.com/api/">
   <link rel="icon" type="image/png" sizes="48x48" href="assets/logo/favicon.png">
   <title>DeckIt — Cartas favoritas</title>
-  <link rel="stylesheet" href="css/style.css?v=20261104-full-theme">
-  <link rel="stylesheet" href="css/search.css?v=20261104-shared-preview">
+  <link rel="stylesheet" href="css/style.css?v=20261113-app-notices">
+  <link rel="stylesheet" href="css/search.css?v=20261113-save-favorites">
   <link rel="stylesheet" href="css/i18n-layout.css">
 </head>
 <body>
@@ -29,7 +29,10 @@
 
     </header>
     <main id="conteudo" class="main search-page">
-      <header class="search-heading"><h1>Cartas favoritas</h1></header>
+      <header class="search-heading favorites-heading">
+        <h1>Cartas favoritas</h1>
+        <button class="create-button" id="save-favorites" type="button" disabled>Salvar</button>
+      </header>
       <section class="favorites-results" aria-label="Cartas favoritas">
         <p id="favorites-status" role="status">Carregando cartas favoritas…</p>
         <ul id="favorite-results" class="search-card-grid"></ul>
@@ -48,6 +51,6 @@
     </nav>
   </div>
   <script src="js/api.js?v=20261104-shared-preview" defer></script>
-  <script src="js/app.js?v=20261104-shared-preview" defer></script>
+  <script src="js/app.js?v=20261113-save-favorites" defer></script>
 </body>
 </html>
