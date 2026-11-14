@@ -67,7 +67,12 @@
     try { payload = raw ? JSON.parse(raw) : null; } catch (_) { payload = raw; }
     if (!response.ok) {
       const detail = payload && (payload.detail || payload.error || Object.values(payload).flat().join(" "));
-      throw new Error(detail || `API error (${response.status})`);
+      const error = new Error(detail || `API error (${response.status})`);
+      error.status = response.status;
+      if (payload && typeof payload === "object") {
+        error.messages = Object.values(payload).flat().filter(value => typeof value === "string");
+      }
+      throw error;
     }
     return payload;
   }

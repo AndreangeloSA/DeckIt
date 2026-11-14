@@ -56,12 +56,15 @@
   .account-stats .stat-card { aspect-ratio: 5 / 3; }
 }
 
-
-
 #reset-password-link {
-  justify-self: end;
-  align-self: flex-end;
   margin-inline-start: auto;
-  margin-bottom: 10px;
-  color: var(--accent);
+  color: var(--gold);
+}
+
+@media (max-width: 480px) {
+  #auth-panel { padding-inline: clamp(10px, 4vw, 18px); }
+  #auth-form .auth-actions { gap: 6px; }
+  #auth-form .auth-actions > * { font-size: 14px; white-space: nowrap; }
+  #auth-submit { padding-inline: 10px; }
+  #auth-mode-toggle { padding-inline: 0; }
 }

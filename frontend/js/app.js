@@ -102,6 +102,30 @@
     }
   };
   Object.assign(translations.en, {
+    "Não foi possível criar a conta.": "Could not create the account.",
+    "Esse nome de usuário já está em uso.": "This username is already in use.",
+    "Informe um e-mail válido.": "Enter a valid email address.",
+    "Informe um nome de usuário válido.": "Enter a valid username.",
+    "A senha é muito comum.": "This password is too common.",
+    "A senha contém apenas números.": "This password contains only numbers.",
+    "A senha é muito parecida com os dados da conta.": "This password is too similar to your account information.",
+    "A senha precisa ter pelo menos {n} caracteres.": "Your password must contain at least {n} characters.",
+    "Seção inválida ou limite de cartas da seção excedido.": "Invalid section or too many cards in this section.",
+    "Limite de cópias da carta excedido entre as seções.": "The copy limit for this card across sections was exceeded.",
+    "O limite é de três cópias da carta.": "The limit is three copies of this card.",
+    "Este tipo de carta não pode ser adicionado à seção.": "This card type cannot be added to this section.",
+    "Não foi possível conectar ao servidor.": "Could not connect to the server.",
+    "Entre novamente para continuar.": "Sign in again to continue.",
+    "A conta foi autenticada, mas não foi possível carregar seus dados.": "You signed in, but your account data could not be loaded.",
+    "Não foi possível carregar este deck.": "Could not load this deck.",
+    "Não foi possível excluir o deck.": "Could not delete the deck.",
+    "Não foi possível salvar o deck na API.": "Could not save the deck.",
+    "Não foi possível atualizar a quantidade.": "Could not update the quantity.",
+    "Não foi possível carregar os detalhes da carta.": "Could not load the card details.",
+    "Não foi possível atualizar os favoritos.": "Could not update favorites.",
+    "Não foi possível pesquisar cartas na API.": "Could not search for cards.",
+    "Deck não encontrado.": "Deck not found.",
+    "Nenhum deck selecionado.": "No deck selected.",
     "Main": "Main",
     "Extra": "Extra",
     "Side": "Side",
@@ -110,6 +134,8 @@
     "Carregando decks…": "Loading decks…",
     "Salvar": "Save",
     "Carregando cartas…": "Loading cards…",
+    "Nenhuma conta ativa encontrada com esse usuário e senha.": "No active account was found with this username and password.",
+    "Não foi possível entrar.": "Could not sign in.",
     "Esqueci minha senha": "Forgot my password",
     "Informe o e-mail que você usou para criar sua conta.": "Enter the email you used to create your account.",
     "Enviar link": "Send link",
@@ -144,6 +170,31 @@
     "Ex.: Dragões de olhos azuis": "e.g. Blue-Eyes Dragons", "Descrição": "Description", "Descreva seu deck...": "Describe your deck..."
   });
   Object.assign(translations.es, {
+    "Nenhum deck selecionado.": "Ningún mazo seleccionado.",
+    "Deck não encontrado.": "Mazo no encontrado.",
+    "Não foi possível pesquisar cartas na API.": "No se pudieron buscar cartas.",
+    "Não foi possível atualizar os favoritos.": "No se pudieron actualizar los favoritos.",
+    "Não foi possível carregar os detalhes da carta.": "No se pudieron cargar los detalles de la carta.",
+    "Não foi possível atualizar a quantidade.": "No se pudo actualizar la cantidad.",
+    "Não foi possível salvar o deck na API.": "No se pudo guardar el mazo.",
+    "Não foi possível excluir o deck.": "No se pudo eliminar el mazo.",
+    "Não foi possível carregar este deck.": "No se pudo cargar este mazo.",
+    "A conta foi autenticada, mas não foi possível carregar seus dados.": "Has iniciado sesión, pero no se pudieron cargar los datos de tu cuenta.",
+    "Entre novamente para continuar.": "Vuelve a iniciar sesión para continuar.",
+    "Não foi possível conectar ao servidor.": "No se pudo conectar con el servidor.",
+    "Este tipo de carta não pode ser adicionado à seção.": "Este tipo de carta no se puede añadir a esta sección.",
+    "O limite é de três cópias da carta.": "El límite es de tres copias de esta carta.",
+    "Limite de cópias da carta excedido entre as seções.": "Se superó el límite de copias de esta carta entre las secciones.",
+    "Seção inválida ou limite de cartas da seção excedido.": "Sección no válida o límite de cartas de la sección superado.",
+    "A senha precisa ter pelo menos {n} caracteres.": "La contraseña debe tener al menos {n} caracteres.",
+    "A senha é muito parecida com os dados da conta.": "Esta contraseña se parece demasiado a los datos de la cuenta.",
+    "A senha contém apenas números.": "Esta contraseña solo contiene números.",
+    "A senha é muito comum.": "Esta contraseña es demasiado común.",
+    "Informe um nome de usuário válido.": "Introduce un nombre de usuario válido.",
+    "Informe um e-mail válido.": "Introduce una dirección de correo válida.",
+    "Esse nome de usuário já está em uso.": "Este nombre de usuario ya está en uso.",
+    "Não foi possível criar a conta.": "No se pudo crear la cuenta.",
+
     "Main": "Principal",
     "Extra": "Extra",
     "Side": "Banquillo",
@@ -152,6 +203,8 @@
     "Carregando decks…": "Cargando mazos…",
     "Salvar": "Guardar",
     "Carregando cartas…": "Cargando cartas…",
+    "Nenhuma conta ativa encontrada com esse usuário e senha.": "No se encontró ninguna cuenta activa con este usuario y contraseña.",
+    "Não foi possível entrar.": "No se pudo iniciar sesión.",
     "Esqueci minha senha": "Olvidé mi contraseña",
     "Informe o e-mail que você usou para criar sua conta.": "Introduce el correo que usaste para crear tu cuenta.",
     "Enviar link": "Enviar enlace",
@@ -213,6 +266,38 @@
       translated = `${language === "en" ? "e.g." : "Ej.:"} ${match[1]}`;
     }
     return translated ? source.replace(trimmed, translated) : source;
+  }
+
+  const apiErrorMessages = new Map([
+    ["A user with that username already exists.", "Esse nome de usuário já está em uso."],
+    ["Enter a valid email address.", "Informe um e-mail válido."],
+    ["Enter a valid username. This value may contain only letters, numbers, and @/./+/-/_ characters.", "Informe um nome de usuário válido."],
+    ["This password is too common.", "A senha é muito comum."],
+    ["This password is entirely numeric.", "A senha contém apenas números."],
+    ["invalid token", "Link inválido ou expirado. Solicite outro link."],
+    ["Invalid section or section card limit exceeded", "Seção inválida ou limite de cartas da seção excedido."],
+    ["Total card quantity across sections exceeded", "Limite de cópias da carta excedido entre as seções."],
+    ["The limit is 3 copies of the card", "O limite é de três cópias da carta."],
+    ["Cannot add this type of card", "Este tipo de carta não pode ser adicionado à seção."],
+    ["Failed to fetch", "Não foi possível conectar ao servidor."],
+  ]);
+
+  function localizedError(error, fallback) {
+    const messages = [];
+    for (const detail of error.messages || [error.message]) {
+      if (!detail) continue;
+      const text = detail.trim();
+      const length = text.match(/^This password is too short\. It must contain at least (\d+) characters?\.$/);
+      if (length) {
+        messages.push(translateValue("A senha precisa ter pelo menos {n} caracteres.").replace("{n}", length[1]));
+      } else if (text.startsWith("The password is too similar to the ")) {
+        messages.push(translateValue("A senha é muito parecida com os dados da conta."));
+      } else {
+        const key = apiErrorMessages.get(text) || (Object.hasOwn(translations.en, text) && text);
+        if (key) messages.push(translateValue(key));
+      }
+    }
+    return messages.join(" ") || translateValue(error.status === 401 ? "Entre novamente para continuar." : fallback);
   }
 
   function applyLanguage() {
@@ -306,7 +391,7 @@
           decks = [...decks.filter(item => String(item.id) !== String(deck.id)), deck];
         } catch (error) {
           const hint = $(".builder-heading span");
-          if (hint) { hint.textContent = error.message || "Não foi possível carregar este deck."; hint.hidden = false; }
+          if (hint) { hint.textContent = localizedError(error, "Não foi possível carregar este deck."); hint.hidden = false; }
         }
       }
       renderCreatePage();
@@ -476,9 +561,7 @@
           message.textContent = translateValue("Se houver uma conta com esse e-mail, você receberá um link para redefinir a senha.");
         }
       } catch (error) {
-        message.textContent = translateValue(error.message === "invalid token"
-          ? "Link inválido ou expirado. Solicite outro link."
-          : error.message || "Não foi possível enviar a solicitação.");
+        message.textContent = localizedError(error, "Não foi possível enviar a solicitação.");
       } finally {
         setButtonBusy(button, false);
       }
@@ -562,7 +645,13 @@
         await showNotice(registerMode ? "Conta criada com sucesso." : "Login realizado com sucesso.");
         renderHome(); renderDeckList(); updateAccountStats();
       } catch (error) {
-        if (message) { message.textContent = error.message || "Não foi possível entrar."; message.hidden = false; }
+        if (message) {
+          const reason = !registerMode && error.status === 401
+            ? "Nenhuma conta ativa encontrada com esse usuário e senha."
+            : registerMode ? "Não foi possível criar a conta." : "Não foi possível entrar.";
+          message.textContent = error.status === 401 && !registerMode ? translateValue(reason) : localizedError(error, reason);
+          message.hidden = false;
+        }
       } finally { if (submit) setButtonBusy(submit, false); }
     });
     const logoutDialog = $("#logout-dialog");
@@ -657,7 +746,7 @@
       renderDeckList();
       return true;
     } catch (error) {
-      await showNotice(error.message || "Não foi possível excluir o deck.");
+      await showNotice(localizedError(error, "Não foi possível excluir o deck."));
       return false;
     }
   }
@@ -825,7 +914,7 @@
       const { results } = await favoriteCards();
       list.innerHTML = results.map(card => resultCardMarkup(card, false)).join("");
       status.textContent = results.length ? "" : translateValue("Nenhuma carta favorita.");
-    } catch (error) { status.textContent = error.message || translateValue("Não foi possível carregar os favoritos."); }
+    } catch (error) { status.textContent = localizedError(error, "Não foi possível carregar os favoritos."); }
   }
 
   async function renderSearchResults(query, target, includeAddButton, filterForm = null, page = 1, append = false) {
@@ -844,7 +933,7 @@
         ]);
         payload = searchPayload;
       }
-      catch (error) { failure = error.message || "Não foi possível pesquisar cartas na API."; }
+      catch (error) { failure = localizedError(error, "Não foi possível pesquisar cartas na API."); }
     }
     if (requestId !== cardSearchSequence) return;
     const found = payload.results || [];
@@ -966,7 +1055,7 @@
       const showResults = Boolean(query || favoritesOnly || hasSearchFilters);
       if (showResults) {
         try { payload = favoritesOnly ? await favoriteCards(activeSection) : await queryCards(query, filters, page); }
-        catch (error) { failure = error.message || "Não foi possível pesquisar cartas na API."; }
+        catch (error) { failure = localizedError(error, "Não foi possível pesquisar cartas na API."); }
       }
       if (requestId !== builderSearchSequence) return;
       const found = payload.results || [];
@@ -1112,7 +1201,7 @@
           }, { once: true });
           dialog.showModal();
         } catch (error) {
-          await showNotice(error.message || "Não foi possível salvar o deck na API.");
+          await showNotice(localizedError(error, "Não foi possível salvar o deck na API."));
           if (submitButton) setButtonBusy(submitButton, false);
         }
         return;
@@ -1129,7 +1218,7 @@
     const id = params.get("id");
     if (!id) {
       $("#deck-loading").hidden = true;
-      list.innerHTML = '<li class="empty-decks">Nenhum deck selecionado.</li>';
+      list.innerHTML = '<li class="empty-decks">' + translateValue("Nenhum deck selecionado.") + '</li>';
       return;
     }
     const addButton = $("#edit-deck-button");
@@ -1166,7 +1255,7 @@
       list.replaceChildren();
       const message = document.createElement("li");
       message.className = "empty-decks";
-      message.textContent = error.message || "Não foi possível carregar este deck.";
+      message.textContent = localizedError(error, "Não foi possível carregar este deck.");
       list.append(message);
       return;
     } finally {
@@ -1219,7 +1308,7 @@
           if (button.dataset.action === "increase") await API.addCard({ deck: deck.id, card: cardId, card_quantity: 1, section: entry.section || "main" });
           else await API.removeCard({ deck: deck.id, card: cardId, card_quantity: 1, section: entry.section || "main" });
           await renderDeckPage();
-        } catch (error) { await showNotice(error.message || "Não foi possível atualizar a quantidade."); setButtonBusy(button, false); }
+        } catch (error) { await showNotice(localizedError(error, "Não foi possível atualizar a quantidade.")); setButtonBusy(button, false); }
         return;
       }
       if (button.dataset.action === "increase") entry.quantity = Number(entry.quantity || 0) + 1;
@@ -1277,7 +1366,7 @@
       if (!button || button.getAttribute("aria-busy") === "true") return;
       button.setAttribute("aria-busy", "true");
       try { await openCardPreview(button.dataset.previewCard); }
-      catch (error) { await showNotice(error.message || "Não foi possível carregar os detalhes da carta."); }
+      catch (error) { await showNotice(localizedError(error, "Não foi possível carregar os detalhes da carta.")); }
       finally { button.removeAttribute("aria-busy"); }
     });
     renderFavoritesPage();
@@ -1354,7 +1443,7 @@
           }
           if (!favoriteList.children.length) $("#favorites-status").textContent = translateValue("Nenhuma carta favorita.");
         } catch (error) {
-          await showNotice(error.message || "Não foi possível atualizar os favoritos.");
+          await showNotice(localizedError(error, "Não foi possível atualizar os favoritos."));
         } finally {
           favoriteList.inert = false;
           setButtonBusy(save, false);
@@ -1372,7 +1461,7 @@
         const selected = favoriteIds.has(button.dataset.favoriteCard);
         button.setAttribute("aria-pressed", String(selected));
         button.textContent = selected ? "♥" : "♡";
-      } catch (error) { await showNotice(error.message || "Não foi possível atualizar os favoritos."); }
+      } catch (error) { await showNotice(localizedError(error, "Não foi possível atualizar os favoritos.")); }
       finally { setButtonBusy(button, false); }
     });
     document.querySelectorAll(".card-search-filter[aria-controls]").forEach(button => {
