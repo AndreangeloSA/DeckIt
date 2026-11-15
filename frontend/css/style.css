@@ -243,7 +243,7 @@ figcaption { margin-top: 8px; color: var(--muted); font-size: clamp(10px, 2.5vw,
 .card-filter-panel label:nth-of-type(n+6) { border-top: 2px solid var(--border); }
 .card-filter-panel .tag-filter { grid-column: 1 / -1; min-width: 0; }
 .card-filter-panel .tag-filter h2 { margin: 0 0 8px; font-size: 14px; font-weight: 600; }
-.card-filter-panel .filter-tags { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; min-width: 0; overflow: visible; padding: 2px 0 4px; }
+.card-filter-panel .filter-tags { display: flex; flex-direction: row; flex-wrap: wrap; align-items: flex-start; gap: 7px; min-width: 0; overflow: visible; padding: 2px 0 4px; }
 .card-filter-panel .filter-tag { flex: 0 0 auto; min-height: 34px; padding: 6px 11px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text); font: inherit; font-size: 12px; white-space: nowrap; text-align: left; cursor: pointer; }
 .card-filter-panel .filter-tag.is-selected, .card-filter-panel .filter-tag[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
 .card-filter-panel .filter-reset { min-height: 40px; border: 0; border-radius: 9px; background: var(--accent); color: var(--on-accent); font: inherit; cursor: pointer; }
