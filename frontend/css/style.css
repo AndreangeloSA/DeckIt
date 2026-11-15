@@ -245,7 +245,9 @@ figcaption { margin-top: 8px; color: var(--muted); font-size: clamp(10px, 2.5vw,
 .card-filter-panel .tag-filter h2 { margin: 0 0 8px; font-size: 14px; font-weight: 600; }
 .card-filter-panel .filter-tags { display: flex; flex-direction: row; flex-wrap: wrap; align-items: flex-start; gap: 7px; min-width: 0; overflow: visible; padding: 2px 0 4px; }
 .card-filter-panel .filter-tag { flex: 0 0 auto; min-height: 34px; padding: 6px 11px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text); font: inherit; font-size: 12px; white-space: nowrap; text-align: left; cursor: pointer; }
+.card-filter-panel .filter-tag[hidden] { display: none !important; }
 .card-filter-panel .filter-tag.is-selected, .card-filter-panel .filter-tag[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+.card-filter-panel .filter-show-more { margin-top: 6px; padding: 5px 0; border: 0; background: transparent; color: var(--accent); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
 .card-filter-panel .filter-reset { min-height: 40px; border: 0; border-radius: 9px; background: var(--accent); color: var(--on-accent); font: inherit; cursor: pointer; }
 @media (min-width: 600px) { .card-filter-panel { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .card-search-submit { flex: 0 0 80px; width: 80px; min-width: 80px; min-height: 38px; padding: 6px 8px; border: 0; border-radius: 9px; background: var(--accent); color: var(--on-accent); font: inherit; font-size: 13px; white-space: nowrap; }

@@ -24,12 +24,15 @@
       const name = group.dataset.filterName;
       const input = group.querySelector('input[name="' + name + '"]');
       const tags = group.querySelector(".filter-tags");
-      (cardFilterOptions[name] || []).forEach(value => {
+      const options = cardFilterOptions[name] || [];
+      const initialCount = 6;
+      options.forEach((value, index) => {
         const button = document.createElement("button");
         button.type = "button";
         button.className = "filter-tag";
         button.textContent = value;
         button.setAttribute("aria-pressed", "false");
+        if (index >= initialCount) button.hidden = true;
         button.addEventListener("click", () => {
           const selected = input.value === value;
           input.value = selected ? "" : value;
@@ -41,11 +44,35 @@
         });
         tags.append(button);
       });
+      if (options.length > initialCount) {
+        const more = document.createElement("button");
+        more.type = "button";
+        more.className = "filter-show-more";
+        more.textContent = "Mostrar mais";
+        more.setAttribute("aria-expanded", "false");
+        more.addEventListener("click", () => {
+          const expanded = more.getAttribute("aria-expanded") !== "true";
+          tags.querySelectorAll(".filter-tag").forEach((tag, index) => {
+            if (index >= initialCount) tag.hidden = !expanded;
+          });
+          more.setAttribute("aria-expanded", String(expanded));
+          more.textContent = expanded ? "Mostrar menos" : "Mostrar mais";
+        });
+        group.append(more);
+      }
     });
   }
 
   function initCardFilterPanels() {
-    document.querySelectorAll(".card-filter-panel").forEach(initCardFilterTags);
+    document.querySelectorAll(".card-filter-panel").forEach(panel => {
+      initCardFilterTags(panel);
+      panel.querySelectorAll('input[type="number"]').forEach(field => {
+        field.min = "0";
+        field.addEventListener("input", () => {
+          if (field.value !== "" && Number(field.value) < 0) field.value = "";
+        });
+      });
+    });
     document.querySelectorAll(".card-search-filter[aria-controls]").forEach(button => {
       const panel = document.getElementById(button.getAttribute("aria-controls"));
       if (!panel || button.dataset.filterToggleReady === "true") return;
@@ -998,7 +1025,10 @@
     let payload = { results: [], count: 0, next: null };
     let failure = "";
     const filters = {};
-    if (filterForm) new FormData(filterForm).forEach((value, key) => { if (key !== "q" && String(value).trim()) filters[key] = String(value).trim(); });
+    if (filterForm) new FormData(filterForm).forEach((value, key) => {
+      const text = String(value).trim();
+      if (key !== "q" && text && !(Number.isFinite(Number(text)) && Number(text) < 0)) filters[key] = text;
+    });
     if (normalized || Object.keys(filters).length) {
       try {
         const [searchPayload] = await Promise.all([
@@ -1123,7 +1153,7 @@
       const requestId = ++builderSearchSequence;
       let payload = { results: [], count: 0, next: null };
       let failure = "";
-      const filters = Object.fromEntries(Array.from(new FormData(queryForm), ([key, value]) => [key, value.trim()]).filter(([, value]) => value));
+      const filters = Object.fromEntries(Array.from(new FormData(queryForm), ([key, value]) => [key, value.trim()]).filter(([, value]) => value && !(Number.isFinite(Number(value)) && Number(value) < 0)));
       filters.deck_section = activeSection;
       const hasSearchFilters = Object.keys(filters).some(key => key !== "deck_section");
       const showResults = Boolean(query || favoritesOnly || hasSearchFilters);
