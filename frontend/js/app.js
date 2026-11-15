@@ -10,6 +10,73 @@
 
   const demoDeckIds = new Set(["blue-eyes", "dark-magician", "red-eyes", "red-eyes-treino"]);
 
+  const cardFilterOptions = {
+    type: ["Normal Monster", "Effect Monster", "Ritual Monster", "Fusion Monster", "Synchro Monster", "Synchro Tuner Monster", "XYZ Monster", "Pendulum Effect Monster", "Pendulum Normal Monster", "Link Monster", "Spell Card", "Trap Card", "Token", "Flip Effect Monster", "Tuner Monster", "Spirit Monster", "Union Effect Monster", "Gemini Monster", "Toon Monster", "Skill Card"],
+    attribute: ["DARK", "LIGHT", "EARTH", "WATER", "FIRE", "WIND", "DIVINE"],
+    race: ["Aqua", "Beast", "Beast-Warrior", "Creator-God", "Cyberse", "Dinosaur", "Divine-Beast", "Dragon", "Fairy", "Fiend", "Fish", "Illusion", "Insect", "Machine", "Plant", "Psychic", "Pyro", "Reptile", "Rock", "Sea Serpent", "Spellcaster", "Thunder", "Warrior", "Winged Beast", "Wyrm", "Zombie", "Continuous", "Counter", "Equip", "Field", "Fusion", "Ritual"],
+    frameType: ["normal", "effect", "ritual", "fusion", "synchro", "xyz", "link", "normal_pendulum", "effect_pendulum", "spell", "trap", "token", "skill"]
+  };
+
+  function initCardFilterTags(panel) {
+    panel.querySelectorAll(".tag-filter").forEach(group => {
+      if (group.dataset.initialized === "true") return;
+      group.dataset.initialized = "true";
+      const name = group.dataset.filterName;
+      const input = group.querySelector('input[name="' + name + '"]');
+      const tags = group.querySelector(".filter-tags");
+      (cardFilterOptions[name] || []).forEach(value => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "filter-tag";
+        button.textContent = value;
+        button.setAttribute("aria-pressed", "false");
+        button.addEventListener("click", () => {
+          const selected = input.value === value;
+          input.value = selected ? "" : value;
+          tags.querySelectorAll(".filter-tag").forEach(tag => {
+            const active = tag === button && !selected;
+            tag.classList.toggle("is-selected", active);
+            tag.setAttribute("aria-pressed", String(active));
+          });
+        });
+        tags.append(button);
+      });
+    });
+  }
+
+  function initCardFilterPanels() {
+    document.querySelectorAll(".card-filter-panel").forEach(initCardFilterTags);
+    document.querySelectorAll(".card-search-filter[aria-controls]").forEach(button => {
+      const panel = document.getElementById(button.getAttribute("aria-controls"));
+      if (!panel || button.dataset.filterToggleReady === "true") return;
+      button.dataset.filterToggleReady = "true";
+      const setOpen = open => {
+        panel.hidden = !open;
+        button.setAttribute("aria-expanded", String(open));
+      };
+      button.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        setOpen(panel.hidden);
+      });
+      document.addEventListener("click", event => {
+        if (!panel.hidden && !panel.contains(event.target) && !button.contains(event.target)) setOpen(false);
+      });
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && !panel.hidden) {
+          setOpen(false);
+          button.focus();
+        }
+      });
+      panel.addEventListener("reset", () => requestAnimationFrame(() => {
+        panel.querySelectorAll(".filter-tag").forEach(tag => {
+          tag.classList.remove("is-selected");
+          tag.setAttribute("aria-pressed", "false");
+        });
+      }));
+    });
+  }
+
   const LANGUAGE_KEY = "deckit.local.language";
   const translations = {
     en: {
@@ -847,8 +914,15 @@
     const search = ($("#deck-search")?.value || "").trim().toLocaleLowerCase("pt-BR");
     const sort = $("#deck-sort")?.value || "name";
     let visible = decks.filter(deck => deck.name.toLocaleLowerCase("pt-BR").includes(search));
+    const recency = deck => {
+      const rawDate = deck.updatedAt || deck.updated_at || deck.createdAt || deck.created_at;
+      const date = typeof rawDate === "number" ? rawDate : Date.parse(rawDate || "");
+      if (Number.isFinite(date)) return date;
+      const id = Number(deck.id);
+      return Number.isFinite(id) ? id : 0;
+    };
     visible.sort((a, b) => sort === "updated"
-      ? (b.updatedAt || 0) - (a.updatedAt || 0)
+      ? recency(b) - recency(a)
       : a.name.localeCompare(b.name, "pt-BR"));
     if (count) count.textContent = decks.length + (decks.length === 1 ? " deck" : " decks");
     list.innerHTML = visible.map(deck => {
@@ -1213,6 +1287,10 @@
   async function renderDeckPage() {
     const list = $("#deck-card-list");
     if (!list) return;
+    const addButton = $("#edit-deck-button");
+    const deleteButton = $("#delete-deck-button");
+    if (addButton) addButton.disabled = true;
+    if (deleteButton) deleteButton.disabled = true;
     let activeDeckSection = list.dataset.activeSection || "main";
     const params = new URLSearchParams(location.search);
     const id = params.get("id");
@@ -1221,12 +1299,12 @@
       list.innerHTML = '<li class="empty-decks">' + translateValue("Nenhum deck selecionado.") + '</li>';
       return;
     }
-    const addButton = $("#edit-deck-button");
     if (addButton) addButton.onclick = () => {
+      if (addButton.disabled) return;
       location.href = "create-deck.html?edit=" + encodeURIComponent(id);
     };
-    const deleteButton = $("#delete-deck-button");
     if (deleteButton) deleteButton.onclick = async () => {
+      if (deleteButton.disabled) return;
       if (await deleteDeckById(id, deleteButton)) location.href = "decks.html";
       else setButtonBusy(deleteButton, false);
     };
@@ -1292,6 +1370,8 @@
     }
     ready = true;
     renderSection();
+    if (addButton) addButton.disabled = false;
+    if (deleteButton) deleteButton.disabled = false;
 
     list.onclick = async event => {
       const button = event.target.closest("[data-action]");
@@ -1360,6 +1440,7 @@
   }
 
   function init() {
+    initCardFilterPanels();
     loadLanguage();
     document.addEventListener("click", async event => {
       const button = event.target.closest("[data-preview-card]");
@@ -1396,6 +1477,14 @@
       const filterPanel = $(".card-filter-panel", searchForm);
       const params = new URLSearchParams(location.search);
       if (filterPanel) filterPanel.querySelectorAll("[name]").forEach(field => { if (params.has(field.name)) field.value = params.get(field.name); });
+      if (filterPanel) filterPanel.querySelectorAll(".tag-filter").forEach(group => {
+        const input = group.querySelector('input[name="' + group.dataset.filterName + '"]');
+        group.querySelectorAll(".filter-tag").forEach(tag => {
+          const active = tag.textContent === input.value;
+          tag.classList.toggle("is-selected", active);
+          tag.setAttribute("aria-pressed", String(active));
+        });
+      });
       let searchTimer;
       searchForm.addEventListener("submit", async event => {
         event.preventDefault();
@@ -1463,23 +1552,6 @@
         button.textContent = selected ? "♥" : "♡";
       } catch (error) { await showNotice(localizedError(error, "Não foi possível atualizar os favoritos.")); }
       finally { setButtonBusy(button, false); }
-    });
-    document.querySelectorAll(".card-search-filter[aria-controls]").forEach(button => {
-      const panel = document.getElementById(button.getAttribute("aria-controls"));
-      function setOpen(open) {
-        panel.hidden = !open;
-        button.setAttribute("aria-expanded", String(open));
-      }
-      button.addEventListener("click", () => setOpen(panel.hidden));
-      document.addEventListener("click", event => {
-        if (!panel.hidden && !panel.contains(event.target) && !button.contains(event.target)) setOpen(false);
-      });
-      document.addEventListener("keydown", event => {
-        if (event.key === "Escape" && !panel.hidden) {
-          setOpen(false);
-          button.focus();
-        }
-      });
     });
     initSettings();
 

@@ -233,7 +233,7 @@ figcaption { margin-top: 8px; color: var(--muted); font-size: clamp(10px, 2.5vw,
 .card-search-filter > .icon { display: block; width: 27px; height: 27px; }
 .card-search-filter:hover { width: 44px; min-width: 44px; height: 44px; min-height: 44px; border-radius: 9px; background: color-mix(in srgb, var(--border) 35%, transparent); transition: background-color 160ms ease; }
 .search-bar, .card-search-form { position: relative; }
-.card-filter-panel { position: absolute; z-index: 20; top: calc(100% + 8px); right: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: min(560px, calc(100vw - 32px)); min-width: 0; margin: 0; padding: 20px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); color: var(--text); box-shadow: 0 14px 34px rgb(0 0 0 / 22%); }
+.card-filter-panel { box-sizing: border-box; position: absolute; z-index: 20; top: calc(100% + 8px); right: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 560px; max-width: calc(100vw - 32px); max-height: min(75vh, 680px); overflow-y: auto; overflow-x: hidden; min-width: 0; margin: 0; padding: 20px; border: 1px solid var(--border); border-radius: 16px; background: var(--surface); color: var(--text); box-shadow: 0 14px 34px rgb(0 0 0 / 22%); }
 .card-filter-panel[hidden] { display: none; }
 .card-filter-panel legend { grid-column: 1 / -1; float: left; width: 100%; margin: 0 0 4px; padding: 0 0 12px; border: 0; border-bottom: 2px solid var(--border); color: var(--text); font-size: 17px; font-weight: 700; }
 .card-filter-panel label { display: grid; gap: 6px; min-width: 0; padding: 10px; border: 1px solid var(--border); border-radius: 11px; background: var(--background); color: var(--text); font-size: 13px; font-weight: 600; }
@@ -241,6 +241,12 @@ figcaption { margin-top: 8px; color: var(--muted); font-size: clamp(10px, 2.5vw,
 .card-filter-panel input::placeholder { color: var(--muted); opacity: 1; }
 .card-filter-panel input:focus { outline: 3px solid color-mix(in srgb, var(--accent) 24%, transparent); outline-offset: 1px; border-color: var(--accent); }
 .card-filter-panel label:nth-of-type(n+6) { border-top: 2px solid var(--border); }
+.card-filter-panel .tag-filter { grid-column: 1 / -1; min-width: 0; }
+.card-filter-panel .tag-filter h2 { margin: 0 0 8px; font-size: 14px; font-weight: 600; }
+.card-filter-panel .filter-tags { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; min-width: 0; overflow: visible; padding: 2px 0 4px; }
+.card-filter-panel .filter-tag { flex: 0 0 auto; min-height: 34px; padding: 6px 11px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text); font: inherit; font-size: 12px; white-space: nowrap; text-align: left; cursor: pointer; }
+.card-filter-panel .filter-tag.is-selected, .card-filter-panel .filter-tag[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+.card-filter-panel .filter-reset { min-height: 40px; border: 0; border-radius: 9px; background: var(--accent); color: var(--on-accent); font: inherit; cursor: pointer; }
 @media (min-width: 600px) { .card-filter-panel { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .card-search-submit { flex: 0 0 80px; width: 80px; min-width: 80px; min-height: 38px; padding: 6px 8px; border: 0; border-radius: 9px; background: var(--accent); color: var(--on-accent); font: inherit; font-size: 13px; white-space: nowrap; }
 .site-footer .site-disclaimer { margin: 5px auto 0; max-width: 760px; color: var(--muted); font-size: 10px; line-height: 1.45; }

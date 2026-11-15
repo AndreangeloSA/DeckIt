@@ -23,7 +23,8 @@
 .add-card-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 8px 14px; border: 1px solid var(--accent); border-radius: 12px; background: var(--accent); color: var(--on-accent); font: inherit; font-size: 14px; }
 .add-card-button .icon { width: 20px; height: 20px; }
 .delete-deck-button { min-height: 42px; padding: 8px 14px; border: 1px solid var(--accent); border-radius: 12px; background: transparent; color: var(--accent); font: inherit; font-size: 14px; }
-.delete-deck-button:hover { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.delete-deck-button:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.deck-actions button:disabled { opacity: .5; cursor: not-allowed; }
 .single-deck-title { flex: 1; min-width: 0; }
 .single-deck-description { margin: 8px 0 0; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
 .single-deck-description[hidden] { display: none; }

@@ -19,7 +19,7 @@
   <title>DeckIt — Deck</title>
   <link rel="stylesheet" href="css/style.css?v=20261113-app-notices">
   <link rel="stylesheet" href="css/decks.css">
-  <link rel="stylesheet" href="css/single-deck.css?v=20261113-deck-empty">
+  <link rel="stylesheet" href="css/single-deck.css?v=20261114-deck-loading">
   <link rel="stylesheet" href="css/i18n-layout.css">
 </head>
 <body>
@@ -42,10 +42,10 @@
             <p></p>
           </section>
       <div class="deck-actions">
-        <button id="edit-deck-button" class="add-card-button edit-deck-button" type="button">
+        <button id="edit-deck-button" disabled class="add-card-button edit-deck-button" type="button">
           Editar deck
         </button>
-        <button id="delete-deck-button" aria-haspopup="dialog" aria-controls="delete-deck-dialog" class="delete-deck-button" type="button" aria-label="Excluir deck" title="Excluir deck">Excluir deck</button>
+        <button id="delete-deck-button" disabled aria-haspopup="dialog" aria-controls="delete-deck-dialog" class="delete-deck-button" type="button" aria-label="Excluir deck" title="Excluir deck">Excluir deck</button>
       </div>
       <section class="single-deck-cards" aria-label="Cartas do deck">
         <div class="single-deck-section-bar">
@@ -80,7 +80,7 @@
     </nav>
   </div>
   <script src="js/api.js?v=20261113-localized-notices" defer></script>
-  <script src="js/app.js?v=20261113-localized-notices" defer></script>
+  <script src="js/app.js?v=20261114-card-tag-filters" defer></script>
 </body>
 </html>
 

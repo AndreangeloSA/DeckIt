@@ -17,9 +17,9 @@
   <meta name="deckit-api-base" content="https://deckit-api.onrender.com/api/">
   <link rel="icon" type="image/png" sizes="48x48" href="assets/logo/favicon.png">
   <title>DeckIt — Criar deck</title>
-  <link rel="stylesheet" href="css/style.css?v=20261113-app-notices">
+  <link rel="stylesheet" href="css/style.css?v=20261115-card-tags-no-wrap">
   <link rel="stylesheet" href="css/decks.css">
-  <link rel="stylesheet" href="css/create-deck.css?v=20261113-save-dialog">
+  <link rel="stylesheet" href="css/create-deck.css?v=20261114-desktop-spacing">
   <link rel="stylesheet" href="css/i18n-layout.css">
 </head>
 <body>
@@ -58,7 +58,7 @@
             <label class="sr-only" for="builder-search">Pesquisar cartas pelo nome</label>
             <input id="builder-search" form="builder-query-form" type="search" placeholder="Pesquisar cartas pelo nome..." autocomplete="off">
             <button class="card-search-filter" type="button" aria-label="Filtros de pesquisa" aria-controls="builder-card-filters" aria-expanded="false"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5h4m4 0h12M2 12h11m4 0h5M2 19h4m4 0h12"/><circle cx="8" cy="5" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="19" r="2"/></svg></button><button id="search-cards-button" form="builder-query-form" class="card-search-submit" type="submit">Buscar</button>
-            <fieldset class="card-filter-panel" id="builder-card-filters" hidden><legend>Filtrar cartas</legend><label>Tipo<input form="builder-query-form" name="type" type="text" placeholder="Ex.: Effect Monster"></label><label>Atributo<input form="builder-query-form" name="attribute" type="text" placeholder="Ex.: DARK"></label><label>Nível<input form="builder-query-form" name="level" type="number" min="0" placeholder="Ex.: 7"></label><label>Raça<input form="builder-query-form" name="race" type="text" placeholder="Ex.: Spellcaster"></label><label>Tipo de moldura<input form="builder-query-form" name="frameType" type="text" placeholder="Ex.: effect"></label><label>ATK mín.<input form="builder-query-form" name="atk_min" type="number" placeholder="Sem mínimo"></label><label>ATK máx.<input form="builder-query-form" name="atk_max" type="number" placeholder="Sem máximo"></label><label>DEF mín.<input form="builder-query-form" name="def_min" type="number" placeholder="Sem mínimo"></label><label>DEF máx.<input form="builder-query-form" name="def_max" type="number" placeholder="Sem máximo"></label></fieldset>
+            <fieldset class="card-filter-panel" id="builder-card-filters" hidden><legend>Filtrar cartas</legend><div class="tag-filter" data-filter-name="type"><h2>Tipo</h2><div class="filter-tags" role="group" aria-label="Tipo"></div><input form="builder-query-form" name="type" type="hidden"></div><div class="tag-filter" data-filter-name="attribute"><h2>Atributo</h2><div class="filter-tags" role="group" aria-label="Atributo"></div><input form="builder-query-form" name="attribute" type="hidden"></div><div class="tag-filter" data-filter-name="race"><h2>Raça</h2><div class="filter-tags" role="group" aria-label="Raça"></div><input form="builder-query-form" name="race" type="hidden"></div><div class="tag-filter" data-filter-name="frameType"><h2>Tipo de moldura</h2><div class="filter-tags" role="group" aria-label="Tipo de moldura"></div><input form="builder-query-form" name="frameType" type="hidden"></div><label>Nível exato<input form="builder-query-form" name="level" type="number" min="0" placeholder="Qualquer nível"></label><label>ATK exato<input form="builder-query-form" name="atk" type="number" placeholder="Qualquer valor"></label><label>DEF exata<input form="builder-query-form" name="defense" type="number" placeholder="Qualquer valor"></label><button class="filter-reset" type="reset" form="builder-query-form">Limpar filtros</button></fieldset>
           </div>
           <button id="builder-favorites" class="search-load-more" type="button">Ver cartas favoritas</button>
           <div id="deck-empty-grid" class="deck-empty-grid" aria-label="Cartas adicionadas ao deck" aria-live="polite">
@@ -87,7 +87,7 @@
     </nav>
   </div>
   <script src="js/api.js?v=20261113-localized-notices" defer></script>
-  <script src="js/app.js?v=20261113-localized-notices" defer></script>
+  <script src="js/app.js?v=20261115-card-filters" defer></script>
 </body>
 </html>
 

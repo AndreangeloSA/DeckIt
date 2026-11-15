@@ -65,6 +65,13 @@
 .builder-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; list-style: none; margin: 14px 0 0; padding: 0; }
 .builder-card-grid[hidden] { display: none !important; }
 .builder-card-grid li { min-width: 0; }
+@media (min-width: 1000px) {
+  .main.create-deck-page :is(.builder-card-grid, .chosen-card-items) {
+    grid-template-columns: repeat(auto-fill, minmax(var(--thumbnail-cell), 1fr));
+    gap: 20px;
+    align-content: start;
+  }
+}
 .chosen-card { display: flex; align-items: center; gap: 9px; min-width: 0; padding: 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
 .chosen-card > img { width: 40%; max-width: 74px; height: auto; border-radius: 5px; }
 .chosen-card > div { display: grid; gap: 6px; min-width: 0; color: var(--text); font-size: 11px; }
